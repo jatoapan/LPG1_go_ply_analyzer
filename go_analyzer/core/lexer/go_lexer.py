@@ -117,6 +117,25 @@ t_LSHIFT_ASSIGN = r"<<="
 t_RSHIFT_ASSIGN = r">>="
 # END Contribution: Juan Fernández
 
+#START Contribution: Nicolás Fiallo
+t_AND = r"&"
+t_OR = r"\|"
+t_XOR = r"\^"
+t_AND_NOT = r"&\^"
+t_LSHIFT = r"<<"
+t_RSHIFT = r">>"
+t_LPAREN = r"\("
+t_RPAREN = r"\)"
+t_LBRACE = r"\{"
+t_RBRACE = r"\}"
+t_LBRACKET = r"\["
+t_RBRACKET = r"\]"
+t_COMMA = r","
+t_DOT = r"\."
+t_SEMICOLON = r";"
+t_COLON = r":"
+#END Contribution: Nicolás Fiallo
+
 
 t_ignore = " \t"
 
@@ -152,11 +171,20 @@ def t_STRING(t):
 
 # END Contribution: Juan Fernández
 
+#START Contribution: Nicolás Fiallo
+def t_SINGLE_LINE_COMMENT(t):
+    r"//[^\n]*"
+    pass
+
+def t_MULTI_LINE_COMMENT(t):
+    r"\/\*(.|\n)*\*\/"
+    t.lexer.lineno += t.value.count("\n")
+    pass
+#END Contribution: Nicolás Fiallo
 
 def t_newline(t):
     r"\n+"
     t.lexer.lineno += len(t.value)
-
 
 lexical_errors = []
 
@@ -168,23 +196,28 @@ def t_error(t):
     lexical_errors.append(message)
     t.lexer.skip(1)  # Skip the illegal character and continue
 
-
 lexer = lex.lex()
 
-# --- Now, let's test it ---
-if __name__ == "__main__":
-    data = """
-    5 * (2 + 3)
-    10 / 2 - 1
-    """
+def run_lexer(file_path, github_user):
+    with open(file_path, "r", encoding="utf-8") as input_file:
+        source_code = input_file.read()
+        lexer.input(source_code)
 
-    # Give the lexer some input
-    lexer.input(data)
+        user_id = github_user.lower().replace(" ", "")
+        now = datetime.now().strftime("%d-%m-%Y-%Hh%M")
+        log_file_path = f"logs/lexer-{user_id}-{now}.txt"
 
-    # Tokenize the input
-    print("--- Generated Tokens ---")
-    while True:
-        tok = lexer.token()  # Get the next token
-        if not tok:
-            break  # No more input
-        print(tok)
+        with open(log_file_path, "w", encoding="utf-8") as log_file:
+            while True:
+                token = lexer.token()
+                if not token:
+                    break
+                line = f"{token.type}({token.value}) at line {token.lineno}\n"
+                log_file.write(line)
+                print(line.strip())
+
+            if lexical_errors:
+                log_file.write("\nLexical errors detected:\n")
+                for error_msg in lexical_errors:
+                    log_file.write(f"- {error_msg}\n")
+
