@@ -152,7 +152,6 @@ def t_IDENTIFIER(t):
     t.type = reserved.get(t.value, "IDENTIFIER")
     return t
 
-
 def t_INT(t):
     r"\d+"
     t.value = int(t.value)
@@ -192,7 +191,7 @@ def run_lexer(file_path, github_user):
 
         user_id = github_user.lower().replace(" ", "")
         now = datetime.now().strftime("%d-%m-%Y-%Hh%M")
-        log_file_path = f"logs/lexer-{user_id}-{now}.txt"
+        log_file_path = f"./logs/lexer-{user_id}-{now}.txt"
 
         with open(log_file_path, "w", encoding="utf-8") as log_file:
             while True:
