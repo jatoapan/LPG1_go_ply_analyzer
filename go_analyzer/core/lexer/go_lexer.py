@@ -25,7 +25,7 @@ tokens = (
     "MODULE", "PLUSPLUS", "MINUSMINUS", "EQ", "NEQ",
     "LT", "LE", "GT", "GE", "INT",
     # END Contribution: José Toapanta
-    #
+    
     # START Contribution: Juan Fernández
     "LAND", "LOR", "LNOT", "ASSIGN", "SHORT_ASSIGN",
     "PLUS_ASSIGN", "MINUS_ASSIGN", "MULT_ASSIGN", "DIV_ASSIGN",
@@ -38,7 +38,6 @@ tokens = (
     "LPAREN", "RPAREN", "LBRACE", "RBRACE", "LBRACKET", "RBRACKET",
     "COMMA", "DOT", "SEMICOLON", "COLON"
     #END Contribution: Nicolás Fiallo
-
 )
 
 reserved = {
@@ -56,7 +55,7 @@ reserved = {
     "string": "STRING_TYPE",
     "bool": "BOOL_TYPE",
     # END Contribution: José Toapanta
-    #
+    
     # START Contribution: Juan Fernández
     "switch": "SWITCH",
     "case": "CASE",
@@ -133,9 +132,19 @@ t_SEMICOLON = r";"
 t_COLON = r":"
 #END Contribution: Nicolás Fiallo
 
-
 t_ignore = " \t"
 
+# START Contribution: Juan Fernández
+def t_FLOAT64(t):
+    r"(\d+\.\d*([eE][+-]?\d+)?|\d+[eE][+-]?\d+|\.\d+([eE][+-]?\d+)?)"
+    t.value = float(t.value)
+    return t
+
+def t_STRING(t):
+    r'"([^"\\]|\\.)*"'
+    t.value = t.value[1:-1]
+    return t
+# END Contribution: Juan Fernández
 
 # START Contribution: José Toapanta
 def t_IDENTIFIER(t):
@@ -148,25 +157,7 @@ def t_INT(t):
     r"\d+"
     t.value = int(t.value)
     return t
-
-
 # END Contribution: José Toapanta
-
-
-# START Contribution: Juan Fernández
-def t_FLOAT64(t):
-    r"\d+\.\d+"
-    t.value = float(t.value)
-    return t
-
-
-def t_STRING(t):
-    r'"([^"\\]|\\.)*"'
-    t.value = t.value[1:-1]
-    return t
-
-
-# END Contribution: Juan Fernández
 
 #START Contribution: Nicolás Fiallo
 def t_SINGLE_LINE_COMMENT(t):
@@ -184,7 +175,6 @@ def t_newline(t):
     t.lexer.lineno += len(t.value)
 
 lexical_errors = []
-
 
 # Error handling rule
 def t_error(t):
@@ -216,5 +206,4 @@ def run_lexer(file_path, github_user):
             if lexical_errors:
                 log_file.write("\nLexical errors detected:\n")
                 for error_msg in lexical_errors:
-                    log_file.write(f"- {error_msg}\n")
-
+                    log_file.write(f"- {error_msg}\n")
