@@ -66,6 +66,16 @@ reserved = {
     "struct": "STRUCT",
     "interface": "INTERFACE",
     # END Contribution: Juan Fernández
+
+    #START Contribution: Nicolás Fiallo
+    "if":"IF",
+    "else":"ELSE",
+    "for":"FOR",
+    "break":"BREAK",
+    "continue":"CONTINUE",
+    "range":"RANGE",
+    "map":"MAP"
+    #END Contribution: Nicolás Fiallo
 }
 
 tokens += tuple(reserved.values())
