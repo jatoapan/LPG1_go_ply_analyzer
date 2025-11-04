@@ -13,45 +13,32 @@ from datetime import datetime
 # Functions for recognizing FLOAT64 and STRING literals
 # END Contribution: Juan Fernández
 
+# START Contribution: Nicolás Fiallo
+# Bitwise operators, shift operators, delimiters, and punctuation tokens
+# Reserved keywords for conditional and loop constructs (if, else, for, break, continue, range, map)
+# Functions for handling single-line and multi-line comments
+# END Contribution: Nicolás Fiallo
 
 tokens = (
     # START Contribution: José Toapanta
-    "IDENTIFIER",
-    "PLUS",
-    "MINUS",
-    "TIMES",
-    "DIVIDE",
-    "MODULE",
-    "PLUSPLUS",
-    "MINUSMINUS",
-    "EQ",
-    "NEQ",
-    "LT",
-    "LE",
-    "GT",
-    "GE",
-    "INT",
+    "IDENTIFIER", "PLUS", "MINUS", "TIMES", "DIVIDE", 
+    "MODULE", "PLUSPLUS", "MINUSMINUS", "EQ", "NEQ",
+    "LT", "LE", "GT", "GE", "INT",
     # END Contribution: José Toapanta
     #
     # START Contribution: Juan Fernández
-    "LAND",
-    "LOR",
-    "LNOT",
-    "ASSIGN",
-    "SHORT_ASSIGN",
-    "PLUS_ASSIGN",
-    "MINUS_ASSIGN",
-    "MULT_ASSIGN",
-    "DIV_ASSIGN",
-    "MOD_ASSIGN",
-    "AND_ASSIGN",
-    "OR_ASSIGN",
-    "XOR_ASSIGN",
-    "LSHIFT_ASSIGN",
-    "RSHIFT_ASSIGN",
-    "FLOAT64",
-    "STRING",
+    "LAND", "LOR", "LNOT", "ASSIGN", "SHORT_ASSIGN",
+    "PLUS_ASSIGN", "MINUS_ASSIGN", "MULT_ASSIGN", "DIV_ASSIGN",
+    "MOD_ASSIGN", "AND_ASSIGN", "OR_ASSIGN", "XOR_ASSIGN",
+    "LSHIFT_ASSIGN", "RSHIFT_ASSIGN", "FLOAT64", "STRING",
     # END Contribution: Juan Fernández
+
+    #START Contribution: Nicolás Fiallo
+    "AND", "OR", "XOR", "AND_NOT", "LSHIFT", "RSHIFT",
+    "LPAREN", "RPAREN", "LBRACE", "RBRACE", "LBRACKET", "RBRACKET",
+    "COMMA", "DOT", "SEMICOLON", "COLON"
+    #END Contribution: Nicolás Fiallo
+
 )
 
 reserved = {
@@ -173,7 +160,7 @@ def t_STRING(t):
 
 #START Contribution: Nicolás Fiallo
 def t_SINGLE_LINE_COMMENT(t):
-    r"//[^\n]*"
+    r"\/\/[^\n]*"
     pass
 
 def t_MULTI_LINE_COMMENT(t):
