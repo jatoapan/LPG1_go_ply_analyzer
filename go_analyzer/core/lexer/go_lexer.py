@@ -23,7 +23,7 @@ tokens = (
     # START Contribution: José Toapanta
     "IDENTIFIER", "PLUS", "MINUS", "TIMES", "DIVIDE", 
     "MODULE", "PLUSPLUS", "MINUSMINUS", "EQ", "NEQ",
-    "LT", "LE", "GT", "GE", "INT",
+    "LT", "LE", "GT", "GE", "INT", "ELLIPSIS",
     # END Contribution: José Toapanta
     
     # START Contribution: Juan Fernández
@@ -80,6 +80,7 @@ reserved = {
 tokens += tuple(reserved.values())
 
 # START Contribution: José Toapanta
+t_ELLIPSIS = r'\.\.\.'
 t_PLUS = r"\+"
 t_MINUS = r"-"
 t_TIMES = r"\*"
@@ -147,14 +148,14 @@ def t_STRING(t):
 # END Contribution: Juan Fernández
 
 # START Contribution: José Toapanta
-def t_IDENTIFIER(t):
-    r"[a-zA-Z_][a-zA-Z0-9_]*"
-    t.type = reserved.get(t.value, "IDENTIFIER")
-    return t
-
 def t_INT(t):
     r"\d+"
     t.value = int(t.value)
+    return t
+
+def t_IDENTIFIER(t):
+    r"[a-zA-Z_][a-zA-Z0-9_]*"
+    t.type = reserved.get(t.value, "IDENTIFIER")
     return t
 # END Contribution: José Toapanta
 
