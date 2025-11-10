@@ -12,6 +12,15 @@ import ply.yacc as yacc
 # Complete expression evaluation with literals, identifiers, post-increment/decrement, and parenthesized grouping
 # END Contribution: José Toapanta
 
+# START Contribution: Nicolas Fiallo
+# switch statement declaration
+# recursive case clauses, with terminal clause
+# case clause structure: CASE reserved word, expression 
+# default reserved statement 
+# Array structure defined, added to expression_type
+# variadic functions calls validated
+# END Contribution: Nicolas Fiallo
+
 # START Contribution: José Toapanta
 precedence = (
     ('right', 'LNOT'),
@@ -66,7 +75,8 @@ def p_statement(p):
                  | variable_declaration
                  | expression
                  | return_statement
-                 | for_statement"""
+                 | for_statement
+                 | switch_statement"""
 
 def p_for_statement(p):
     """for_statement : FOR expression block
@@ -135,7 +145,8 @@ def p_variable_declaration(p):
 
 def p_type(p):
     """type : primitive_type
-            | slice_type"""
+            | slice_type
+            | array_type"""
 
 def p_primitive_type(p):
     """primitive_type : INT_TYPE
@@ -203,6 +214,43 @@ def p_expression_list(p):
     """expression_list : expression_list COMMA expression
                        | expression"""
 # END Contribution: José Toapanta
+
+# START Contribution: Nicolas Fiallo
+def p_case_clauses(p):
+    """case_clauses : case_clause case_clauses
+                    | empty"""
+    
+def p_case_clause(p):
+    """case_clause : CASE expression_list COLON statement_sequence
+                   | DEFAULT COLON statement_sequence"""
+
+def p_switch_init(p):
+    """switch_init : assignment SEMICOLON
+                    | empty"""
+
+def p_switch_expression(p):
+    """switch_expression : expression 
+                         | empty"""
+
+def p_switch_statement(p): 
+    """switch_statement : SWITCH switch_init switch_expression LBRACE case_clauses RBRACE""" 
+
+def p_array(p):
+    """array_type : LBRACKET expression RBRACKET type"""
+
+def p_variadic_call(p):
+    """expression : expression ELLIPSIS"""
+
+def p_exprs_selector(p):
+    """expression : expression DOT IDENTIFIER"""
+
+def p_argument_list(p):
+    """argument_list : expression_list
+                     | empty"""
+
+def p_func_call(p):
+    """expression : expression LPAREN argument_list RPAREN"""
+# END Contribution: Nicolas Fiallo
 
 def p_error(p):
     if p:
