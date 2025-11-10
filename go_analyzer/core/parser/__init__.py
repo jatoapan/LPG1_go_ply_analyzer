@@ -1,2 +1,2 @@
-from .go_parser import parser
-__all__ = ['parser']
+from .go_parser import parser, run_parser
+__all__ = ['parser', 'run_parser']

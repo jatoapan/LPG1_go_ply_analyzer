@@ -1,0 +1,123 @@
+======================================================================
+Go Language Parser - Syntax Analysis Report
+======================================================================
+File: tests/nfiallo5.go
+User: Nicolas Fiallo
+Date: 2025-11-10 02:06:23
+======================================================================
+
+SOURCE CODE:
+----------------------------------------------------------------------
+   1 | // Algorithm to validate lexer from Nicolas Fiallo
+   2 | package main
+   3 | 
+   4 | import "fmt"
+   5 | 
+   6 | const str string = "hola mundo" //string
+   7 | var numero = 20                 //int
+   8 | var negativo float64 = -14.5    //float64
+   9 | 
+  10 | type Person struct {
+  11 | 	name string //struct
+  12 | 	age  int    //int
+  13 | }
+  14 | 
+  15 | type Circle interface {
+  16 | 	area(radius float64) float64 //interface
+  17 | }
+  18 | 
+  19 | func powerOf2(a int) int {
+  20 | 	return 1 << a //function
+  21 | }
+  22 | 
+  23 | func isWeekDay(day string) string {
+  24 | 	switch day {
+  25 | 	case "monday", "tuesday", "wednesday", "thursday", "friday":
+  26 | 		return "It's a weekday"
+  27 | 	case "saturday", "sunday":
+  28 | 		return "It's the weekend"
+  29 | 	case "holiday":
+  30 | 		fallthrough
+  31 | 	default:
+  32 | 		return "Not a valid day"
+  33 | 	}
+  34 | }
+  35 | 
+  36 | func sum(nums ...int) int {
+  37 | 	total := 0
+  38 | 	for _, num := range nums {
+  39 | 		total += num
+  40 | 	}
+  41 | 	return total //return
+  42 | }
+  43 | 
+  44 | func main() {
+  45 | 	negativo++                     //plus-plus
+  46 | 	x := powerOf2(3)               //assign
+  47 | 	var booleano bool = true       //boolean
+  48 | 	var num = []int{1, 2, 3, 4, 5} //array
+  49 | 	var edades map[string]int
+  50 | 
+  51 | 	for i := 0; i < 5; i++ { //for loop
+  52 | 		if i == 3 {
+  53 | 			continue //continue
+  54 | 		}
+  55 | 		if i == 4 {
+  56 | 			break //break
+  57 | 		}
+  58 | 	}
+  59 | 
+  60 | 	/*
+  61 | 		It validates multi-line comments
+  62 | 	*/
+  63 | 	if x == 8 { //if statement
+  64 | 		fmt.Println(str)
+  65 | 	} else if booleano {
+  66 | 		numero-- //minus-minus
+  67 | 	} else { //else statement
+  68 | 		fmt.Println("mal calculado")
+  69 | 	}
+  70 | 
+  71 | 	nums := []int{1, 2, 3, 4, 5}
+  72 | 	totalSum := sum(nums...)
+  73 | 	fmt.Println("Total Sum:", totalSum)
+  74 | 	fmt.Println(edades)
+  75 | 
+  76 | 	for indice, valor := range num { //range
+  77 | 		fmt.Println("Indice:", indice, "Valor:", valor)
+  78 | 	}
+  79 | }
+  80 | 
+----------------------------------------------------------------------
+
+PARSING PROCESS:
+----------------------------------------------------------------------
+✓ Parsing completed successfully
+✓ Parse succeeded despite 1 recoverable grammar conflicts
+  (These are spurious errors from shift/reduce conflicts, not real syntax errors)
+
+VALIDATED GRAMMAR RULES:
+----------------------------------------------------------------------
+✓ If statements
+✓ Else clauses
+✓ For loops
+✓ Switch statements
+✓ Struct type declarations
+✓ Map types
+✓ Composite literals (struct/map initialization)
+✓ Package declaration
+✓ Import statements
+✓ Function declarations
+✓ Variable declarations
+✓ Return statements
+✓ Slice types
+✓ Array types
+✓ Post-increment/decrement
+✓ Arithmetic expressions
+✓ Relational operators
+✓ Short variable declarations
+✓ Variadic parameters/calls
+
+======================================================================
+PARSING SUCCESS - All syntax rules validated correctly
+======================================================================
