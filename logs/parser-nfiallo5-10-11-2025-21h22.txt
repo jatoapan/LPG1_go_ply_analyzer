@@ -1,0 +1,106 @@
+======================================================================
+Go Language Parser - Syntax Analysis Report
+======================================================================
+File: tests/nfiallo5_parser.go
+User: nfiallo5
+Date: 2025-11-10 21:22:01
+======================================================================
+
+SOURCE CODE:
+----------------------------------------------------------------------
+   1 | // Algorithm to validate syntax highlighting for Nicolás Fiallo's contributions
+   2 | package main
+   3 | 
+   4 | import "fmt"
+   5 | 
+   6 | var edad int = 20 //int
+   7 | 
+   8 | type Person struct { //struct
+   9 | 	name string //string
+  10 | 	age  int    //int
+  11 | }
+  12 | 
+  13 | type Circle interface {
+  14 | 	area(radius float64) float64 //interface
+  15 | }
+  16 | 
+  17 | func isWeekDay(day string) string {
+  18 | 	switch day {
+  19 | 	case "monday", "tuesday", "wednesday", "thursday", "friday":
+  20 | 		return "It's a weekday"
+  21 | 	case "saturday", "sunday":
+  22 | 		return "It's the weekend"
+  23 | 	case "holiday":
+  24 | 		fallthrough
+  25 | 	default:
+  26 | 		return "Not a valid day"
+  27 | 	}
+  28 | }
+  29 | 
+  30 | func sum(nums ...int) int {
+  31 | 	total := 0
+  32 | 	for _, num := range nums {
+  33 | 		total += num
+  34 | 	}
+  35 | 	return total //return
+  36 | }
+  37 | 
+  38 | func main() {
+  39 | 	var a [5]int
+  40 | 	fmt.Println("emp:", a)
+  41 | 
+  42 | 	a[4] = 100
+  43 | 	fmt.Println("set:", a)
+  44 | 	fmt.Println("get:", a[4])
+  45 | 
+  46 | 	var twoD [2][3]int
+  47 | 	for i := range 2 {
+  48 | 		for j := range 3 {
+  49 | 			twoD[i][j] = i + j
+  50 | 		}
+  51 | 	}
+  52 | 
+  53 | 	const buleano = true //boolean
+  54 | 	sum(1, 2, 3, 4, 5)   //function call
+  55 | 	/*
+  56 | 		It validates multi-line comments
+  57 | 	*/
+  58 | 	if edad == 8 { //if statement
+  59 | 		fmt.Println(str)
+  60 | 	} else if buleano {
+  61 | 		numero-- //minus-minus
+  62 | 	} else { //else statement
+  63 | 		fmt.Println("mal calculado")
+  64 | 	}
+  65 | }
+  66 | 
+----------------------------------------------------------------------
+
+PARSING PROCESS:
+----------------------------------------------------------------------
+✓ Parsing completed successfully
+✓ Parse succeeded despite 1 recoverable grammar conflicts
+
+VALIDATED GRAMMAR RULES:
+----------------------------------------------------------------------
+✓ If statements
+✓ Else clauses
+✓ For loops
+✓ Switch statements
+✓ Struct type declarations
+✓ Composite literals (struct/map initialization)
+✓ Package declaration
+✓ Import statements
+✓ Function declarations
+✓ Variable declarations
+✓ Return statements
+✓ Array types
+✓ Post-increment/decrement
+✓ Arithmetic expressions
+✓ Relational operators
+✓ Short variable declarations
+✓ Variadic parameters/calls
+
+======================================================================
+PARSING SUCCESS - All syntax rules validated correctly
+======================================================================

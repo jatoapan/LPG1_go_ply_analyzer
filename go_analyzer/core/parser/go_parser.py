@@ -78,7 +78,6 @@ def p_statement_list(p):
     | statement_list SEMICOLON statement"""
 
 
-
 def p_statement(p):
     """statement : assignment
     | assignment_compound
@@ -361,6 +360,7 @@ def p_expression_composite_literal(p):
 # Default reserved statement
 # Array structure defined, added to expression_type
 # Variadic functions calls validated
+# Print/Input statements: fmt.Println/Printf/Scanf with variadic argument support
 
 def p_case_clauses(p):
     """case_clauses : case_clause
@@ -374,7 +374,8 @@ def p_case_clause(p):
 
 def p_case_body(p):
     """case_body : empty
-    | statement_list"""
+    | statement_list
+    | FALLTHROUGH"""
 
 
 def p_switch_init(p):
@@ -389,6 +390,14 @@ def p_switch_expression(p):
 
 def p_switch_statement(p):
     """switch_statement : SWITCH switch_init switch_expression LBRACE case_clauses RBRACE"""
+
+
+def p_print_statement(p):
+    """expression : IDENTIFIER DOT IDENTIFIER LPAREN argument_list RPAREN"""
+
+
+def p_input_statement(p):
+    """expression : IDENTIFIER DOT IDENTIFIER LPAREN AND IDENTIFIER COMMA argument_list RPAREN"""
 
 # END Contribution: Nicolas Fiallo
 
