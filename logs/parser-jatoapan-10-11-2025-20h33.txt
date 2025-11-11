@@ -1,0 +1,185 @@
+======================================================================
+Go Language Parser - Syntax Analysis Report
+======================================================================
+File: tests/jfernandez_parser.go
+User: jatoapan
+Date: 2025-11-10 20:33:07
+======================================================================
+
+SOURCE CODE:
+----------------------------------------------------------------------
+   1 | // Test file for Juan Francisco Fernandez parser contributions
+   2 | // Tests: if/else, structs, methods, maps, and composite literals
+   3 | 
+   4 | package main
+   5 | 
+   6 | import "fmt"
+   7 | 
+   8 | // Struct type declaration - defines a Person composite type
+   9 | type Person struct {
+  10 | 	name string
+  11 | 	age  int
+  12 | 	city string
+  13 | }
+  14 | 
+  15 | // Struct type declaration - defines a Rectangle type
+  16 | type Rectangle struct {
+  17 | 	width  float64
+  18 | 	height float64
+  19 | }
+  20 | 
+  21 | // Map type declaration for storing student scores
+  22 | var scores map[string]int
+  23 | 
+  24 | // Map type declaration for user profiles
+  25 | var profiles map[int]Person
+  26 | 
+  27 | // Method with receiver - calculates area of Rectangle
+  28 | func (r Rectangle) Area() float64 {
+  29 | 	return r.width * r.height
+  30 | }
+  31 | 
+  32 | // Method with receiver - calculates perimeter of Rectangle
+  33 | func (r Rectangle) Perimeter() float64 {
+  34 | 	return 2 * (r.width + r.height)
+  35 | }
+  36 | 
+  37 | // Method with pointer receiver - updates Person name
+  38 | func (p *Person) UpdateName(newName string) {
+  39 | 	p.name = newName
+  40 | }
+  41 | 
+  42 | // Method with receiver - checks if person is adult
+  43 | func (p Person) IsAdult() bool {
+  44 | 	return p.age >= 18
+  45 | }
+  46 | 
+  47 | func main() {
+  48 | 	// If statement - simple condition
+  49 | 	x := 10
+  50 | 	if x > 5 {
+  51 | 		fmt.Println("x is greater than 5")
+  52 | 	}
+  53 | 
+  54 | 	// If-else statement - binary decision
+  55 | 	y := 3
+  56 | 	if y > 5 {
+  57 | 		fmt.Println("y is greater than 5")
+  58 | 	} else {
+  59 | 		fmt.Println("y is not greater than 5")
+  60 | 	}
+  61 | 
+  62 | 	// If-else-if chain - multiple conditions
+  63 | 	score := 85
+  64 | 	if score >= 90 {
+  65 | 		fmt.Println("Grade: A")
+  66 | 	} else if score >= 80 {
+  67 | 		fmt.Println("Grade: B")
+  68 | 	} else if score >= 70 {
+  69 | 		fmt.Println("Grade: C")
+  70 | 	} else {
+  71 | 		fmt.Println("Grade: F")
+  72 | 	}
+  73 | 
+  74 | 	// If with initialization statement
+  75 | 	if age := 25; age >= 18 {
+  76 | 		fmt.Println("Adult")
+  77 | 	} else {
+  78 | 		fmt.Println("Minor")
+  79 | 	}
+  80 | 
+  81 | 	// If with initialization and else-if
+  82 | 	if num := x * 2; num > 15 {
+  83 | 		fmt.Println("Large number")
+  84 | 	} else if num > 10 {
+  85 | 		fmt.Println("Medium number")
+  86 | 	} else {
+  87 | 		fmt.Println("Small number")
+  88 | 	}
+  89 | 
+  90 | 	// Struct literal - creating Person instances
+  91 | 	person1 := Person{name: "Alice", age: 30, city: "NYC"}
+  92 | 	person2 := Person{name: "Bob", age: 25, city: "LA"}
+  93 | 
+  94 | 	// Struct literal - creating Rectangle instance
+  95 | 	rect := Rectangle{width: 10.5, height: 20.0}
+  96 | 
+  97 | 	// Using methods on structs
+  98 | 	area := rect.Area()
+  99 | 	perimeter := rect.Perimeter()
+ 100 | 
+ 101 | 	fmt.Println("Area:", area)
+ 102 | 	fmt.Println("Perimeter:", perimeter)
+ 103 | 
+ 104 | 	// Map literal - initializing with key-value pairs
+ 105 | 	ages := map[string]int{
+ 106 | 		"Alice": 30,
+ 107 | 		"Bob":   25,
+ 108 | 		"Carol": 28,
+ 109 | 	}
+ 110 | 
+ 111 | 	// Map literal - creating coordinate map
+ 112 | 	coordinates := map[string]float64{
+ 113 | 		"x": 10.5,
+ 114 | 		"y": 20.3,
+ 115 | 		"z": 5.7,
+ 116 | 	}
+ 117 | 
+ 118 | 	// Empty map literal
+ 119 | 	emptyMap := map[string]bool{}
+ 120 | 
+ 121 | 	// Nested if statements with map access
+ 122 | 	if val := ages["Alice"]; val > 0 {
+ 123 | 		if val >= 18 {
+ 124 | 			fmt.Println("Alice is an adult")
+ 125 | 		}
+ 126 | 	}
+ 127 | 
+ 128 | 	// Method calls on struct instances
+ 129 | 	if person1.IsAdult() {
+ 130 | 		fmt.Println(person1.name, "is an adult")
+ 131 | 	}
+ 132 | 
+ 133 | 	person2.UpdateName("Robert")
+ 134 | 	fmt.Println("Updated name:", person2.name)
+ 135 | 
+ 136 | 	// Composite literal for nested structs
+ 137 | 	data := map[int]Person{
+ 138 | 		1: Person{name: "Dave", age: 35, city: "Boston"},
+ 139 | 		2: Person{name: "Eve", age: 40, city: "Seattle"},
+ 140 | 	}
+ 141 | 
+ 142 | 	fmt.Println(data)
+ 143 | 	fmt.Println(coordinates)
+ 144 | 	fmt.Println(emptyMap)
+ 145 | }
+ 146 | 
+----------------------------------------------------------------------
+
+PARSING PROCESS:
+----------------------------------------------------------------------
+✓ Parsing completed successfully
+✓ Parse succeeded despite 1 recoverable grammar conflicts
+
+VALIDATED GRAMMAR RULES:
+----------------------------------------------------------------------
+✓ If statements
+✓ Else clauses
+✓ For loops
+✓ Struct type declarations
+✓ Method declarations with receivers
+✓ Map types
+✓ Composite literals (struct/map initialization)
+✓ Package declaration
+✓ Import statements
+✓ Function declarations
+✓ Variable declarations
+✓ Return statements
+✓ Array types
+✓ Arithmetic expressions
+✓ Relational operators
+✓ Short variable declarations
+
+======================================================================
+PARSING SUCCESS - All syntax rules validated correctly
+======================================================================
