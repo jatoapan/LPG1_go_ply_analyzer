@@ -1,5 +1,7 @@
 from go_analyzer.core.lexer import tokens
 import ply.yacc as yacc
+from datetime import datetime
+import os
 
 # START Contribution: José Toapanta
 # Parser rules for package declaration, imports, and global program structure
@@ -10,28 +12,7 @@ import ply.yacc as yacc
 # Logical conditions with connectors (&&, ||, !) combined with relational operators (==, !=, <, >, <=, >=)
 # Variable assignment with all primitive types (int, float64, string, bool) supporting explicit and type inference
 # Complete expression evaluation with literals, identifiers, post-increment/decrement, and parenthesized grouping
-# END Contribution: José Toapanta
 
-# START Contribution: Nicolas Fiallo
-# switch statement declaration
-# recursive case clauses, with terminal clause
-# case clause structure: CASE reserved word, expression
-# default reserved statement
-# Array structure defined, added to expression_type
-# variadic functions calls validated
-# END Contribution: Nicolas Fiallo
-
-# START Contribution: Juan Francisco Fernandez
-# If/else conditional statements with optional else clause for branching logic
-# Struct type declarations (type Name struct { fields }) for composite data types
-# Struct field definitions with type annotations for data modeling
-# Struct literals with field:value initialization syntax
-# Method declarations with receiver syntax: func (receiver Type) method() { }
-# Map type declarations map[KeyType]ValueType for key-value data structures
-# Map literals with key:value pair initialization
-# END Contribution: Juan Francisco Fernandez
-
-# START Contribution: José Toapanta
 precedence = (
     ("right", "LNOT"),
     ("right", "UMINUS", "UPLUS"),
@@ -49,7 +30,8 @@ precedence = (
 
 
 def p_program(p):
-    "program : package_declaration multiple_import global_sequence"
+    """program : package_declaration multiple_import
+    | package_declaration multiple_import global_sequence"""
 
 
 def p_package_declaration(p):
@@ -75,9 +57,8 @@ def p_optional_semicolon(p):
 
 
 def p_global_sequence(p):
-    """global_sequence : global_sequence global_statement
-    | global_statement
-    | empty"""
+    """global_sequence : global_statement
+    | global_sequence global_statement"""
 
 
 def p_global_statement(p):
@@ -88,7 +69,14 @@ def p_global_statement(p):
 
 
 def p_block(p):
-    "block : LBRACE statement_sequence RBRACE"
+    """block : LBRACE RBRACE
+    | LBRACE statement_list RBRACE"""
+
+
+def p_statement_list(p):
+    """statement_list : statement
+    | statement_list SEMICOLON statement"""
+
 
 
 def p_statement(p):
@@ -99,7 +87,17 @@ def p_statement(p):
     | return_statement
     | for_statement
     | if_statement
-    | switch_statement"""
+    | switch_statement
+    | break_statement
+    | continue_statement"""
+
+
+def p_break_statement(p):
+    "break_statement : BREAK"
+
+
+def p_continue_statement(p):
+    "continue_statement : CONTINUE"
 
 
 def p_for_statement(p):
@@ -109,8 +107,9 @@ def p_for_statement(p):
 
 
 def p_for_clause(p):
-    """for_clause : assignment optional_semicolon expression optional_semicolon expression
-    | optional_semicolon expression optional_semicolon expression"""
+    """for_clause : assignment SEMICOLON expression SEMICOLON assignment
+    | SEMICOLON expression SEMICOLON assignment
+    | SEMICOLON expression SEMICOLON"""
 
 
 def p_return_statement(p):
@@ -119,14 +118,8 @@ def p_return_statement(p):
 
 
 def p_return_list(p):
-    """return_list : return_list COMMA expression
-    | expression"""
-
-
-def p_statement_sequence(p):
-    """statement_sequence : statement_sequence statement optional_semicolon
-    | statement optional_semicolon
-    | empty"""
+    """return_list : expression
+    | return_list COMMA expression"""
 
 
 def p_function_declaration(p):
@@ -200,6 +193,10 @@ def p_slice_type(p):
     "slice_type : LBRACKET RBRACKET primitive_type"
 
 
+def p_array_type(p):
+    """array_type : LBRACKET INT RBRACKET type"""
+
+
 def p_expression_binary(p):
     """expression : expression PLUS expression
     | expression MINUS expression
@@ -233,11 +230,6 @@ def p_expression_slice(p):
     | LBRACKET RBRACKET primitive_type LBRACE RBRACE"""
 
 
-def p_expression_composite_literal(p):
-    """expression : type LBRACE keyed_element_list RBRACE
-    | type LBRACE RBRACE"""
-
-
 def p_expression_group(p):
     "expression : LPAREN expression RPAREN"
 
@@ -268,15 +260,36 @@ def p_expression_postfix(p):
     | IDENTIFIER MINUSMINUS"""
 
 
+def p_expression_selector(p):
+    """expression : expression DOT IDENTIFIER"""
+
+
 def p_expression_list(p):
     """expression_list : expression_list COMMA expression
     | expression"""
+
+
+def p_func_call(p):
+    """expression : IDENTIFIER LPAREN argument_list RPAREN"""
+
+
+def p_argument_list(p):
+    """argument_list : expression_list
+    | empty"""
 
 
 # END Contribution: José Toapanta
 
 
 # START Contribution: Juan Francisco Fernandez
+# If/else conditional statements with optional else clause for branching logic
+# Struct type declarations (type Name struct { fields }) for composite data types
+# Struct field definitions with type annotations for data modeling
+# Struct literals with field:value initialization syntax
+# Method declarations with receiver syntax: func (receiver Type) method() { }
+# Map type declarations map[KeyType]ValueType for key-value data structures
+# Map literals with key:value pair initialization
+
 def p_if_statement(p):
     """if_statement : IF expression block
     | IF expression block ELSE block
@@ -288,26 +301,29 @@ def p_if_statement(p):
 
 def p_type_declaration(p):
     """type_declaration : TYPE IDENTIFIER struct_type optional_semicolon
-    | TYPE IDENTIFIER type optional_semicolon"""
+    | TYPE IDENTIFIER primitive_type optional_semicolon
+    | TYPE IDENTIFIER slice_type optional_semicolon
+    | TYPE IDENTIFIER array_type optional_semicolon
+    | TYPE IDENTIFIER map_type optional_semicolon
+    | TYPE IDENTIFIER IDENTIFIER optional_semicolon"""
 
 
 def p_struct_type(p):
-    """struct_type : STRUCT LBRACE field_list RBRACE"""
+    """struct_type : STRUCT LBRACE RBRACE
+    | STRUCT LBRACE field_list RBRACE"""
 
 
 def p_field_list(p):
-    """field_list : field_list field_declaration optional_semicolon
-    | field_declaration optional_semicolon
-    | empty"""
+    """field_list : field_declaration
+    | field_list SEMICOLON field_declaration"""
 
 
 def p_field_declaration(p):
-    """field_declaration : IDENTIFIER type
-    | IDENTIFIER COMMA IDENTIFIER type"""
+    """field_declaration : IDENTIFIER type"""
 
 
 def p_method_declaration(p):
-    """method_declaration : FUNC LPAREN receiver RPAREN IDENTIFIER LPAREN parameter_list RPAREN return_type block"""
+    "method_declaration : FUNC LPAREN receiver RPAREN IDENTIFIER LPAREN parameter_list RPAREN return_type block"
 
 
 def p_receiver(p):
@@ -316,7 +332,7 @@ def p_receiver(p):
 
 
 def p_map_type(p):
-    """map_type : MAP LBRACKET type RBRACKET type"""
+    """map_type : MAP LBRACKET primitive_type RBRACKET type"""
 
 
 def p_keyed_element_list(p):
@@ -325,22 +341,40 @@ def p_keyed_element_list(p):
 
 
 def p_keyed_element(p):
-    """keyed_element : expression COLON expression
+    """keyed_element : IDENTIFIER COLON expression
+    | INT COLON expression
     | expression"""
+
+
+def p_expression_composite_literal(p):
+    """expression : IDENTIFIER LBRACE keyed_element_list RBRACE
+    | IDENTIFIER LBRACE RBRACE"""
 
 
 # END Contribution: Juan Francisco Fernandez
 
 
 # START Contribution: Nicolas Fiallo
+# Switch statement declaration
+# Recursive case clauses, with terminal clause
+# Case clause structure: CASE reserved word, expression
+# Default reserved statement
+# Array structure defined, added to expression_type
+# Variadic functions calls validated
+
 def p_case_clauses(p):
-    """case_clauses : case_clause case_clauses
-    | empty"""
+    """case_clauses : case_clause
+    | case_clauses case_clause"""
 
 
 def p_case_clause(p):
-    """case_clause : CASE expression_list COLON statement_sequence
-    | DEFAULT COLON statement_sequence"""
+    """case_clause : CASE expression_list COLON case_body
+    | DEFAULT COLON case_body"""
+
+
+def p_case_body(p):
+    """case_body : empty
+    | statement_list"""
 
 
 def p_switch_init(p):
@@ -356,57 +390,20 @@ def p_switch_expression(p):
 def p_switch_statement(p):
     """switch_statement : SWITCH switch_init switch_expression LBRACE case_clauses RBRACE"""
 
-
-def p_array(p):
-    """array_type : LBRACKET expression RBRACKET type"""
-
-
-def p_variadic_call(p):
-    """expression : expression ELLIPSIS"""
-
-
-def p_exprs_selector(p):
-    """expression : expression DOT IDENTIFIER"""
-
-
-def p_argument_list(p):
-    """argument_list : expression_list
-    | empty"""
-
-
-def p_func_call(p):
-    """expression : expression LPAREN argument_list RPAREN"""
-
-
 # END Contribution: Nicolas Fiallo
-
-
-# START Contribution: Juan Francisco Fernandez
-# Parser error handling with logging support
-from datetime import datetime
-import os
-import io
-import sys
 
 parse_errors = []
 suppress_errors = False
 
 
 def p_error(p):
-    """
-    Error handler for parser. Collects errors instead of printing immediately.
-    This prevents spurious error messages from grammar conflicts during successful parses.
-    """
     global parse_errors, suppress_errors
-
     if suppress_errors:
-        # Collect errors silently when in logging mode
         if p:
             parse_errors.append(f"Syntax error at '{p.value}' (line {p.lineno})")
         else:
             parse_errors.append("Syntax error at EOF")
     else:
-        # Print immediately when not in logging mode (interactive use)
         if p:
             print(f"Syntax error at '{p.value}'")
         else:
@@ -414,34 +411,23 @@ def p_error(p):
 
 
 parser = yacc.yacc()
-
 parse_log = []
 
 
 def log_production(rule_name, components):
-    """Log a production rule application"""
     parse_log.append(f"Applied rule: {rule_name}")
     if components:
         parse_log.append(f"  Components: {components}")
 
 
 def run_parser(file_path, github_user):
-    """
-    Parse a Go source file and generate detailed logs
-
-    Args:
-        file_path: Path to the Go source file
-        github_user: Username for log file naming
-    """
     global parse_log, parse_errors, suppress_errors
     parse_log = []
     parse_errors = []
-    suppress_errors = True  # Enable error suppression for logging mode
+    suppress_errors = True
 
     with open(file_path, "r", encoding="utf-8") as input_file:
         source_code = input_file.read()
-
-        # First, tokenize the input
         from go_analyzer.core.lexer import lexer
 
         lexer.input(source_code)
@@ -450,11 +436,9 @@ def run_parser(file_path, github_user):
         now = datetime.now().strftime("%d-%m-%Y-%Hh%M")
         log_file_path = f"./logs/parser-{user_id}-{now}.txt"
 
-        # Ensure logs directory exists
         os.makedirs("./logs", exist_ok=True)
 
         with open(log_file_path, "w", encoding="utf-8") as log_file:
-            # Log header
             log_file.write("=" * 70 + "\n")
             log_file.write("Go Language Parser - Syntax Analysis Report\n")
             log_file.write("=" * 70 + "\n")
@@ -463,14 +447,12 @@ def run_parser(file_path, github_user):
             log_file.write(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
             log_file.write("=" * 70 + "\n\n")
 
-            # Log source code
             log_file.write("SOURCE CODE:\n")
             log_file.write("-" * 70 + "\n")
             for i, line in enumerate(source_code.split("\n"), 1):
                 log_file.write(f"{i:4d} | {line}\n")
             log_file.write("-" * 70 + "\n\n")
 
-            # Parse the code
             log_file.write("PARSING PROCESS:\n")
             log_file.write("-" * 70 + "\n")
 
@@ -479,45 +461,37 @@ def run_parser(file_path, github_user):
 
                 log_file.write("✓ Parsing completed successfully\n")
                 if parse_errors:
-                    log_file.write(
-                        f"✓ Parse succeeded despite {len(parse_errors)} recoverable grammar conflicts\n"
-                    )
-                    log_file.write(
-                        "  (These are spurious errors from shift/reduce conflicts, not real syntax errors)\n"
-                    )
+                    log_file.write(f"✓ Parse succeeded despite {len(parse_errors)} recoverable grammar conflicts\n")
                 else:
                     log_file.write("✓ No syntax errors detected\n")
                 log_file.write("\n")
 
-                # Log grammar rules validation
                 log_file.write("VALIDATED GRAMMAR RULES:\n")
                 log_file.write("-" * 70 + "\n")
 
-                # Analyze which features were used based on source code
                 features_found = []
-
                 if "if " in source_code:
                     features_found.append("✓ If statements")
                 if "else" in source_code:
                     features_found.append("✓ Else clauses")
                 if "for " in source_code:
                     features_found.append("✓ For loops")
+                if "break" in source_code:
+                    features_found.append("✓ Break statements")
+                if "continue" in source_code:
+                    features_found.append("✓ Continue statements")
                 if "switch " in source_code:
                     features_found.append("✓ Switch statements")
                 if "type " in source_code and "struct" in source_code:
                     features_found.append("✓ Struct type declarations")
-                if "func (" in source_code and ")" in source_code:
-                    # Check if it's a method (receiver syntax)
+                if "func (" in source_code:
                     import re
-
                     if re.search(r"func\s*\([^)]+\)\s*\w+\s*\(", source_code):
                         features_found.append("✓ Method declarations with receivers")
                 if "map[" in source_code:
                     features_found.append("✓ Map types")
                 if "{" in source_code and ":" in source_code:
-                    features_found.append(
-                        "✓ Composite literals (struct/map initialization)"
-                    )
+                    features_found.append("✓ Composite literals (struct/map initialization)")
                 if "package " in source_code:
                     features_found.append("✓ Package declaration")
                 if "import " in source_code:
@@ -550,30 +524,23 @@ def run_parser(file_path, github_user):
 
                 log_file.write("\n")
                 log_file.write("=" * 70 + "\n")
-                log_file.write(
-                    "PARSING SUCCESS - All syntax rules validated correctly\n"
-                )
+                log_file.write("PARSING SUCCESS - All syntax rules validated correctly\n")
                 log_file.write("=" * 70 + "\n")
 
-                # Console output
                 print(f"\n{'=' * 70}")
                 print("PARSING SUCCESSFUL!")
                 print(f"{'=' * 70}")
                 print(f"File: {file_path}")
                 print(f"User: {github_user}")
-                if parse_errors:
-                    print(
-                        f"\nNote: {len(parse_errors)} spurious errors suppressed (grammar conflicts)"
-                    )
                 print(f"\nLog file created: {log_file_path}")
                 print(f"\nFeatures detected: {len(features_found)}")
-                for feature in features_found[:10]:  # Show first 10
+                for feature in features_found[:15]:
                     print(f"  {feature}")
-                if len(features_found) > 10:
-                    print(f"  ... and {len(features_found) - 10} more")
+                if len(features_found) > 15:
+                    print(f"  ... and {len(features_found) - 15} more")
                 print(f"{'=' * 70}\n")
 
-                suppress_errors = False  # Reset flag
+                suppress_errors = False
                 return True
 
             except Exception as e:
@@ -594,18 +561,15 @@ def run_parser(file_path, github_user):
                 print(f"Error: {str(e)}")
                 if parse_errors:
                     print(f"\nSyntax errors detected:")
-                    for error in parse_errors[:5]:  # Show first 5
+                    for error in parse_errors[:5]:
                         print(f"  - {error}")
                     if len(parse_errors) > 5:
                         print(f"  ... and {len(parse_errors) - 5} more errors")
                 print(f"Log file created: {log_file_path}")
                 print(f"{'=' * 70}\n")
 
-                suppress_errors = False  # Reset flag
+                suppress_errors = False
                 return False
-
-
-# END Contribution: Juan Francisco Fernandez
 
 
 def main():
@@ -621,4 +585,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

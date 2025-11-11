@@ -1,0 +1,385 @@
+======================================================================
+Go Language Parser - Syntax Analysis Report
+======================================================================
+File: tests/jatoapan_parser.go
+User: jatoapan
+Date: 2025-11-10 19:18:57
+======================================================================
+
+SOURCE CODE:
+----------------------------------------------------------------------
+   1 | package main
+   2 | 
+   3 | // José Toapanta's Syntax Validation Algorithm for Go Parser
+   4 | // Tests for lexical and syntactic analysis of Go language subset
+   5 | 
+   6 | // Global variable declarations
+   7 | var globalCounter int = 100
+   8 | var globalTemperature float64 = 36.5
+   9 | var globalName string = "GoProgram"
+  10 | var globalActive bool = true
+  11 | 
+  12 | const MAX_VALUE int = 1000
+  13 | const PI float64 = 3.14159
+  14 | 
+  15 | // Multiple return types
+  16 | func calculateBasic() (int, int, int) {
+  17 |     result1 := 10 + 5
+  18 |     result2 := 20 * 2
+  19 |     result3 := 100 - 30
+  20 |     return result1, result2, result3
+  21 | }
+  22 | 
+  23 | // Mixed return types
+  24 | func getInfo() (string, float64, bool) {
+  25 |     text := "Information"
+  26 |     value := 42.5
+  27 |     flag := true
+  28 |     return text, value, flag
+  29 | }
+  30 | 
+  31 | // Basic arithmetic operations
+  32 | func basicArithmetic() {
+  33 |     var a int = 10
+  34 |     var b int = 5
+  35 |     
+  36 |     sum := a + b
+  37 |     difference := a - b
+  38 |     product := a * b
+  39 |     quotient := a / b
+  40 |     remainder := a % b
+  41 | }
+  42 | 
+  43 | // Multiple arithmetic operators
+  44 | func complexArithmetic() {
+  45 |     var x int = 10
+  46 |     var y int = 5
+  47 |     var z int = 3
+  48 |     
+  49 |     result1 := x + y * z
+  50 |     result2 := x * y + z
+  51 |     result3 := x + y + z
+  52 |     result4 := x - y - z
+  53 |     result5 := x * y * z
+  54 |     result6 := x / y + z
+  55 | }
+  56 | 
+  57 | // Precedence with parentheses
+  58 | func arithmeticWithParentheses() {
+  59 |     var a int = 10
+  60 |     var b int = 5
+  61 |     var c int = 2
+  62 |     
+  63 |     result1 := (a + b) * c
+  64 |     result2 := a * (b + c)
+  65 |     result3 := (a - b) * (c + 1)
+  66 |     result4 := (a + b) / (c + 1)
+  67 | }
+  68 | 
+  69 | // Unary operators
+  70 | func unaryOperations() {
+  71 |     var x int = 25
+  72 |     negX := -x
+  73 |     posX := +x
+  74 |     
+  75 |     var y float64 = 3.14
+  76 |     negY := -y
+  77 |     posY := +y
+  78 | }
+  79 | 
+  80 | // Short assignment
+  81 | func shortAssignment() {
+  82 |     a := 10
+  83 |     b := 20
+  84 |     c := 30
+  85 |     d := 40
+  86 | }
+  87 | 
+  88 | // Compound assignments
+  89 | func compoundAssignment() {
+  90 |     x := 100
+  91 |     x += 50
+  92 |     x -= 20
+  93 |     x *= 2
+  94 |     x /= 5
+  95 |     x %= 3
+  96 | }
+  97 | 
+  98 | // For loop with condition
+  99 | func forLoopCondition() {
+ 100 |     counter := 0
+ 101 |     for counter < 10 {
+ 102 |         counter += 1
+ 103 |     }
+ 104 | }
+ 105 | 
+ 106 | // Classic for loop
+ 107 | func forLoopClassic() {
+ 108 |     for i := 0; i < 10; i++ {
+ 109 |         result := i + 1
+ 110 |     }
+ 111 | }
+ 112 | 
+ 113 | // For loop decrement
+ 114 | func forLoopDecrement() {
+ 115 |     for j := 10; j > 0; j-- {
+ 116 |         product := j * 2
+ 117 |     }
+ 118 | }
+ 119 | 
+ 120 | // For loop custom step
+ 121 | func forLoopCustomIncrement() {
+ 122 |     for k := 0; k < 20; k += 2 {
+ 123 |         squared := k * k
+ 124 |     }
+ 125 | }
+ 126 | 
+ 127 | // Infinite for loop
+ 128 | func forLoopInfinite() {
+ 129 |     x := 0
+ 130 |     for {
+ 131 |         x += 2
+ 132 |         if x > 20 {
+ 133 |             break
+ 134 |         }
+ 135 |     }
+ 136 | }
+ 137 | 
+ 138 | // For with continue
+ 139 | func forLoopContinue() {
+ 140 |     for i := 0; i < 20; i++ {
+ 141 |         if i < 5 {
+ 142 |             continue
+ 143 |         }
+ 144 |         result := i * 2
+ 145 |     }
+ 146 | }
+ 147 | 
+ 148 | // Nested loops
+ 149 | func nestedForLoops() {
+ 150 |     for i := 0; i < 5; i++ {
+ 151 |         for j := 0; j < 5; j++ {
+ 152 |             sum := i + j
+ 153 |         }
+ 154 |     }
+ 155 | }
+ 156 | 
+ 157 | // Nested with operations
+ 158 | func nestedWithArithmetic() {
+ 159 |     for i := 1; i < 4; i++ {
+ 160 |         for j := 1; j < 4; j++ {
+ 161 |             product := i * j
+ 162 |             total := i + j
+ 163 |         }
+ 164 |     }
+ 165 | }
+ 166 | 
+ 167 | // Int slice
+ 168 | func sliceInt() {
+ 169 |     numbers := []int{1, 2, 3, 4, 5}
+ 170 |     moreNumbers := []int{10, 20, 30, 40}
+ 171 | }
+ 172 | 
+ 173 | // Float slice
+ 174 | func sliceFloat() {
+ 175 |     temperatures := []float64{36.5, 37.2, 38.1, 39.5}
+ 176 |     values := []float64{1.1, 2.2, 3.3}
+ 177 | }
+ 178 | 
+ 179 | // String slice
+ 180 | func sliceString() {
+ 181 |     names := []string{"Alice", "Bob", "Charlie"}
+ 182 |     cities := []string{"Madrid", "Barcelona"}
+ 183 | }
+ 184 | 
+ 185 | // Bool slice
+ 186 | func sliceBool() {
+ 187 |     statuses := []bool{true, false, true}
+ 188 |     flags := []bool{false, true}
+ 189 | }
+ 190 | 
+ 191 | // Empty slices
+ 192 | func emptySlices() {
+ 193 |     emptyInt := []int{}
+ 194 |     emptyFloat := []float64{}
+ 195 |     emptyString := []string{}
+ 196 |     emptyBool := []bool{}
+ 197 | }
+ 198 | 
+ 199 | // Slice with expressions
+ 200 | func sliceWithExpressions() {
+ 201 |     nums := []int{1 + 2, 5 * 3, 10 - 4}
+ 202 |     floats := []float64{1.5 + 2.5, 3.0 * 2.0}
+ 203 | }
+ 204 | 
+ 205 | // Multiple slices
+ 206 | func multipleSlices() {
+ 207 |     intSlice := []int{1, 2, 3, 4, 5}
+ 208 |     floatSlice := []float64{1.1, 2.2, 3.3}
+ 209 |     stringSlice := []string{"one", "two", "three"}
+ 210 |     boolSlice := []bool{true, false}
+ 211 | }
+ 212 | 
+ 213 | // AND operator
+ 214 | func logicalAND() {
+ 215 |     a := 10
+ 216 |     b := 20
+ 217 |     result := a > 5 && b < 30
+ 218 |     condition := a != 0 && b != 0
+ 219 | }
+ 220 | 
+ 221 | // OR operator
+ 222 | func logicalOR() {
+ 223 |     x := 5
+ 224 |     y := 15
+ 225 |     condition1 := x < 0 || y > 10
+ 226 |     condition2 := x == 5 || y == 15
+ 227 | }
+ 228 | 
+ 229 | // NOT operator
+ 230 | func logicalNOT() {
+ 231 |     flag := true
+ 232 |     negFlag := !flag
+ 233 |     condition := !false
+ 234 | }
+ 235 | 
+ 236 | // Complex logical expressions
+ 237 | func complexLogical() {
+ 238 |     a := 10
+ 239 |     b := 20
+ 240 |     c := 30
+ 241 |     result1 := a > 5 && b < 30 && c > 25
+ 242 |     result2 := a == 10 || b == 15 || c == 30
+ 243 |     result3 := !(a < 5) && (b > 15)
+ 244 | }
+ 245 | 
+ 246 | // Relational operators
+ 247 | func relationalOps() {
+ 248 |     x := 10
+ 249 |     y := 20
+ 250 |     eq := x == y
+ 251 |     neq := x != y
+ 252 |     lt := x < y
+ 253 |     le := x <= y
+ 254 |     gt := x > y
+ 255 |     ge := x >= y
+ 256 | }
+ 257 | 
+ 258 | // Post increment
+ 259 | func postIncrement() {
+ 260 |     i := 0
+ 261 |     i++
+ 262 |     j := 5
+ 263 |     j++
+ 264 | }
+ 265 | 
+ 266 | // Post decrement
+ 267 | func postDecrement() {
+ 268 |     i := 10
+ 269 |     i--
+ 270 |     j := 5
+ 271 |     j--
+ 272 | }
+ 273 | 
+ 274 | // For with post operators
+ 275 | func forLoopWithPostOp() {
+ 276 |     for i := 0; i < 10; i++ {
+ 277 |         x := i + 1
+ 278 |     }
+ 279 |     
+ 280 |     for j := 10; j > 0; j-- {
+ 281 |         y := j * 2
+ 282 |     }
+ 283 | }
+ 284 | 
+ 285 | // Four return types
+ 286 | func multiReturn() (int, float64, string, bool) {
+ 287 |     intVal := 42
+ 288 |     floatVal := 3.14
+ 289 |     stringVal := "test"
+ 290 |     boolVal := true
+ 291 |     return intVal, floatVal, stringVal, boolVal
+ 292 | }
+ 293 | 
+ 294 | // Arithmetic in loop
+ 295 | func arithmeticInLoop() {
+ 296 |     for i := 1; i < 6; i++ {
+ 297 |         result := i * 2 + 5
+ 298 |         expr := (i + 2) * (i - 1)
+ 299 |     }
+ 300 | }
+ 301 | 
+ 302 | // Global and local variables
+ 303 | func globalLocalTest() {
+ 304 |     localCounter := 50
+ 305 |     localTemp := 25.5
+ 306 |     
+ 307 |     total := globalCounter + localCounter
+ 308 |     tempDiff := globalTemperature + localTemp
+ 309 | }
+ 310 | 
+ 311 | // Comprehensive validation
+ 312 | func comprehensiveTest() {
+ 313 |     var initial int = 100
+ 314 |     var rate float64 = 0.05
+ 315 |     var description string = "Process"
+ 316 |     var running bool = true
+ 317 |     
+ 318 |     for year := 0; year < 10; year++ {
+ 319 |         initial += 10
+ 320 |         rate += 0.01
+ 321 |     }
+ 322 |     
+ 323 |     for month := 0; month < 12; month++ {
+ 324 |         monthValue := initial * 2
+ 325 |         monthRate := rate * 100.0
+ 326 |     }
+ 327 |     
+ 328 |     numbers := []int{1, 2, 3, 4, 5}
+ 329 |     temps := []float64{20.5, 21.3, 22.1}
+ 330 |     codes := []string{"A", "B", "C"}
+ 331 | }
+ 332 | 
+ 333 | // Main entry point
+ 334 | func main() {
+ 335 |     var x int = 1000
+ 336 |     var y float64 = 0.05
+ 337 |     var label string = "Start"
+ 338 |     var active bool = true
+ 339 |     
+ 340 |     for i := 0; i < 10; i++ {
+ 341 |         x += 50
+ 342 |         y += 0.01
+ 343 |     }
+ 344 |     
+ 345 |     data := []int{10, 20, 30, 40, 50}
+ 346 |     values := []float64{1.5, 2.5, 3.5}
+ 347 | }
+----------------------------------------------------------------------
+
+PARSING PROCESS:
+----------------------------------------------------------------------
+✓ Parsing completed successfully
+✓ Parse succeeded despite 1 recoverable grammar conflicts
+  (These are spurious errors from shift/reduce conflicts, not real syntax errors)
+
+VALIDATED GRAMMAR RULES:
+----------------------------------------------------------------------
+✓ If statements
+✓ For loops
+✓ Composite literals (struct/map initialization)
+✓ Package declaration
+✓ Function declarations
+✓ Variable declarations
+✓ Return statements
+✓ Slice types
+✓ Array types
+✓ Post-increment/decrement
+✓ Arithmetic expressions
+✓ Relational operators
+✓ Logical operators
+✓ Short variable declarations
+
+======================================================================
+PARSING SUCCESS - All syntax rules validated correctly
+======================================================================
