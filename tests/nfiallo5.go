@@ -7,15 +7,6 @@ const str string = "hola mundo" //string
 var numero = 20                 //int
 var negativo float64 = -14.5    //float64
 
-type Person struct {
-	name string //struct
-	age  int    //int
-}
-
-type Circle interface {
-	area(radius float64) float64 //interface
-}
-
 func powerOf2(a int) int {
 	return 1 << a //function
 }
@@ -31,14 +22,6 @@ func isWeekDay(day string) string {
 	default:
 		return "Not a valid day"
 	}
-}
-
-func sum(nums ...int) int {
-	total := 0
-	for _, num := range nums {
-		total += num
-	}
-	return total //return
 }
 
 func main() {
