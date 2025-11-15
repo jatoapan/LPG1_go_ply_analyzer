@@ -9,7 +9,7 @@ from datetime import datetime
 
 # START Contribution: Juan Fernández
 # Logical operators (AND, OR, NOT), compound assignment operators
-# Reserved keywords for control flow (switch, case, fallthrough, default) and type declarations
+# Reserved keywords for control flow (switch, case, default) and type declarations
 # Functions for recognizing FLOAT64 and STRING literals
 # END Contribution: Juan Fernández
 
@@ -59,7 +59,6 @@ reserved = {
     # START Contribution: Juan Fernández
     "switch": "SWITCH",
     "case": "CASE",
-    "fallthrough": "FALLTHROUGH",
     "default": "DEFAULT",
     "type": "TYPE",
     "struct": "STRUCT",
@@ -72,7 +71,6 @@ reserved = {
     "for":"FOR",
     "break":"BREAK",
     "continue":"CONTINUE",
-    "range":"RANGE",
     "map":"MAP"
     #END Contribution: Nicolás Fiallo
 }
@@ -137,7 +135,7 @@ t_ignore = " \t"
 
 # START Contribution: Juan Fernández
 def t_FLOAT64(t):
-    r"(\d+\.\d*([eE][+-]?\d+)?|\d+[eE][+-]?\d+|\.\d+([eE][+-]?\d+)?)"
+    r"-?(\d+\.\d*([eE][+-]?\d+)?|\d+[eE][+-]?\d+|\.\d+([eE][+-]?\d+)?)"
     t.value = float(t.value)
     return t
 
@@ -149,7 +147,7 @@ def t_STRING(t):
 
 # START Contribution: José Toapanta
 def t_INT(t):
-    r"\d+"
+    r"-?\d+"
     t.value = int(t.value)
     return t
 

@@ -13,173 +13,98 @@ import os
 # Variable assignment with all primitive types (int, float64, string, bool) supporting explicit and type inference
 # Complete expression evaluation with literals, identifiers, post-increment/decrement, and parenthesized grouping
 
-precedence = (
-    ("right", "LNOT"),
-    ("right", "UMINUS", "UPLUS"),
-    ("left", "TIMES", "DIVIDE", "MODULE"),
-    ("left", "PLUS", "MINUS"),
-    ("left", "LSHIFT", "RSHIFT"),
-    ("left", "AND"),
-    ("left", "XOR"),
-    ("left", "OR"),
-    ("left", "LT", "LE", "GT", "GE"),
-    ("left", "EQ", "NEQ"),
-    ("left", "LAND"),
-    ("left", "LOR"),
-)
-
-
 def p_program(p):
-    """program : package_declaration multiple_import
-    | package_declaration multiple_import global_sequence"""
-
+    """program : package_declaration import global_statement_list"""
 
 def p_package_declaration(p):
-    "package_declaration : PACKAGE IDENTIFIER optional_semicolon"
+    "package_declaration : PACKAGE IDENTIFIER"
 
-
-def p_multiple_import(p):
-    """multiple_import : multiple_import simple_import
+def p_import(p):
+    """import : simple_import
+    | import simple_import
     | empty"""
 
-
 def p_simple_import(p):
-    "simple_import : IMPORT STRING optional_semicolon"
-
+    """simple_import : IMPORT STRING"""
 
 def p_empty(p):
     "empty :"
 
-
-def p_optional_semicolon(p):
-    """optional_semicolon : SEMICOLON
-    | empty"""
-
-
-def p_global_sequence(p):
-    """global_sequence : global_statement
-    | global_sequence global_statement"""
-
+def p_global_statement_list(p):
+    """global_statement_list : global_statement
+    | global_statement_list global_statement"""
 
 def p_global_statement(p):
-    """global_statement : statement optional_semicolon
+    """global_statement : simple_global_statement SEMICOLON
+    | simple_global_statement
     | function_declaration
     | method_declaration
     | type_declaration"""
 
-
-def p_block(p):
-    """block : LBRACE RBRACE
-    | LBRACE statement_list RBRACE"""
-
-
-def p_statement_list(p):
-    """statement_list : statement
-    | statement_list SEMICOLON statement"""
-
-
-def p_statement(p):
-    """statement : assignment
+def p_simple_global_statement(p):
+    """simple_global_statement : var_dec
+    | var_dec simple_assign
+    | simple_assignment
     | assignment_compound
-    | variable_declaration
-    | expression
-    | return_statement
-    | for_statement
-    | if_statement
-    | switch_statement
-    | break_statement
-    | continue_statement"""
+    | expression"""
 
+def p_var_dec(p):
+    """var_dec : VAR IDENTIFIER type
+    | CONST IDENTIFIER type
+    | VAR IDENTIFIER
+    | CONST IDENTIFIER"""
 
-def p_break_statement(p):
-    "break_statement : BREAK"
-
-
-def p_continue_statement(p):
-    "continue_statement : CONTINUE"
-
-
-def p_for_statement(p):
-    """for_statement : FOR expression block
-    | FOR block
-    | FOR for_clause block"""
-
-
-def p_for_clause(p):
-    """for_clause : assignment SEMICOLON expression SEMICOLON assignment
-    | SEMICOLON expression SEMICOLON assignment
-    | SEMICOLON expression SEMICOLON"""
-
-
-def p_return_statement(p):
-    """return_statement : RETURN
-    | RETURN return_list"""
-
-
-def p_return_list(p):
-    """return_list : expression
-    | return_list COMMA expression"""
-
-
-def p_function_declaration(p):
-    "function_declaration : FUNC IDENTIFIER LPAREN parameter_list RPAREN return_type block"
-
-
-def p_parameter_list(p):
-    """parameter_list : parameter_list COMMA parameter
-    | parameter
-    | empty"""
-
-
-def p_parameter(p):
-    """parameter : IDENTIFIER type
-    | IDENTIFIER ELLIPSIS primitive_type"""
-
-
-def p_return_type(p):
-    """return_type : type
-    | LPAREN type_list RPAREN
-    | empty"""
-
-
-def p_type_list(p):
-    """type_list : type_list COMMA type
-    | type"""
-
-
-def p_assignment(p):
-    """assignment : IDENTIFIER ASSIGN expression
-    | IDENTIFIER SHORT_ASSIGN expression"""
-
+def p_simple_assign(p):
+    """simple_assign : ASSIGN expression"""
 
 def p_assignment_compound(p):
-    """assignment_compound : IDENTIFIER PLUS_ASSIGN expression
-    | IDENTIFIER MINUS_ASSIGN expression
-    | IDENTIFIER MULT_ASSIGN expression
-    | IDENTIFIER DIV_ASSIGN expression
-    | IDENTIFIER MOD_ASSIGN expression
-    | IDENTIFIER AND_ASSIGN expression
-    | IDENTIFIER OR_ASSIGN expression
-    | IDENTIFIER XOR_ASSIGN expression
-    | IDENTIFIER LSHIFT_ASSIGN expression
-    | IDENTIFIER RSHIFT_ASSIGN expression"""
+    """assignment_compound : IDENTIFIER operator_assign expression"""
 
+def p_operator_assign(p):
+    """operator_assign : PLUS_ASSIGN
+    | MINUS_ASSIGN
+    | MULT_ASSIGN
+    | DIV_ASSIGN
+    | MOD_ASSIGN
+    | AND_ASSIGN
+    | OR_ASSIGN
+    | XOR_ASSIGN
+    | LSHIFT_ASSIGN
+    | RSHIFT_ASSIGN"""
 
-def p_variable_declaration(p):
-    """variable_declaration : VAR IDENTIFIER type ASSIGN expression
-    | CONST IDENTIFIER type ASSIGN expression
-    | VAR IDENTIFIER ASSIGN expression
-    | CONST IDENTIFIER ASSIGN expression"""
+def p_expression_binary(p):
+    """expression : expression binary_operator expression"""
 
+def p_binary_operator(p):
+    """binary_operator : PLUS
+    | MINUS
+    | TIMES
+    | DIVIDE
+    | MODULE
+    | EQ
+    | NEQ
+    | LT
+    | LE
+    | GT
+    | GE
+    | LAND
+    | LOR
+    | AND
+    | OR
+    | XOR
+    | AND_NOT
+    | LSHIFT
+    | RSHIFT
+    """
+
+def p_simple_assignment(p):
+    """simple_assignment : IDENTIFIER simple_assign"""
 
 def p_type(p):
     """type : primitive_type
     | slice_type
     | array_type
-    | map_type
-    | struct_type
-    | IDENTIFIER"""
-
+    | map_type"""
 
 def p_primitive_type(p):
     """primitive_type : INT_TYPE
@@ -187,98 +112,125 @@ def p_primitive_type(p):
     | STRING_TYPE
     | BOOL_TYPE"""
 
-
 def p_slice_type(p):
     "slice_type : LBRACKET RBRACKET primitive_type"
 
-
-def p_array_type(p):
-    """array_type : LBRACKET INT RBRACKET type"""
-
-
-def p_expression_binary(p):
-    """expression : expression PLUS expression
-    | expression MINUS expression
-    | expression TIMES expression
-    | expression DIVIDE expression
-    | expression MODULE expression
-    | expression EQ expression
-    | expression NEQ expression
-    | expression LT expression
-    | expression LE expression
-    | expression GT expression
-    | expression GE expression
-    | expression LAND expression
-    | expression LOR expression
-    | expression AND expression
-    | expression OR expression
-    | expression XOR expression
-    | expression AND_NOT expression
-    | expression LSHIFT expression
-    | expression RSHIFT expression"""
-
-
-def p_expression_unary(p):
-    """expression : PLUS expression %prec UPLUS
-    | MINUS expression %prec UMINUS
-    | LNOT expression %prec LNOT"""
-
-
 def p_expression_slice(p):
-    """expression : LBRACKET RBRACKET primitive_type LBRACE expression_list RBRACE
-    | LBRACKET RBRACKET primitive_type LBRACE RBRACE"""
+    """expression : slice_type LBRACE expression_list RBRACE
+    | slice_type LBRACE RBRACE"""
 
+def p_expression_list(p):
+    """expression_list : expression
+    | expression_list COMMA expression"""
 
 def p_expression_group(p):
     "expression : LPAREN expression RPAREN"
 
-
-def p_expression_int(p):
-    "expression : INT"
-
-
-def p_expression_float(p):
-    "expression : FLOAT64"
-
-
-def p_expression_boolean(p):
-    """expression : TRUE
+def p_expression(p):
+    """expression : INT
+    | FLOAT64
+    | IDENTIFIER
+    | STRING
+    | TRUE
     | FALSE"""
 
+def p_short_assign(p):
+    """short_assign : SHORT_ASSIGN expression"""
 
-def p_expression_identifier(p):
-    "expression : IDENTIFIER"
+def p_short_assignment(p):
+    """short_assignment : IDENTIFIER short_assign"""
 
+def p_local_statement(p):
+    """local_statement : var_dec
+    | var_dec simple_assign
+    | assignment_compound
+    | expression
+    | for_statement
+    | if_statement
+    | switch_statement
+    | return_statement"""
 
-def p_expression_string(p):
-    "expression : STRING"
+def p_block(p):
+    """block : LBRACE local_statement_list RBRACE
+             | LBRACE RBRACE"""
 
+def p_local_statement_list(p):
+    """local_statement_list : local_statement
+    | local_statement_list SEMICOLON local_statement"""
+
+def p_for_statement(p):
+    """for_statement : FOR for_init for_condition for_incr LBRACE for_body_list RBRACE
+                     | FOR for_init for_condition for_incr LBRACE RBRACE"""
+
+def p_for_init(p):
+    """for_init : simple_assignment SEMICOLON
+    | short_assignment SEMICOLON
+    | SEMICOLON
+    | empty"""
+
+def p_for_condition(p):
+    """for_condition : expression SEMICOLON
+    | SEMICOLON
+    | empty"""
+
+def p_for_incr(p):
+    """for_incr : simple_assignment
+    | short_assignment
+    | empty"""
+
+def p_for_body_list(p):
+    """for_body_list : for_body
+    | for_body_list SEMICOLON for_body"""
+
+def p_for_body(p):
+    """for_body : local_statement
+    | BREAK
+    | CONTINUE"""
+
+def p_return_list(p):
+    """return_list : expression
+    | return_list COMMA expression"""
+
+def p_function_declaration(p):
+    "function_declaration : FUNC IDENTIFIER LPAREN parameter_list RPAREN return_type block"
+
+def p_parameter_list(p):
+    """parameter_list : parameter_list COMMA parameter
+    | parameter
+    | empty"""
+
+def p_parameter(p):
+    """parameter : IDENTIFIER type
+    | IDENTIFIER ELLIPSIS primitive_type"""
+
+def p_return_type(p):
+    """return_type : type
+    | LPAREN type_list RPAREN
+    | empty"""
+
+def p_type_list(p):
+    """type_list : type
+    | type_list COMMA type"""
+
+def p_return_statement(p):
+    """return_statement : RETURN
+    | RETURN return_list"""
+
+# def p_type(p):
+#     """type : primitive_type
+#     | slice_type
+#     | array_type
+#     | map_type
+#     | struct_type
+#     | IDENTIFIER"""
+
+def p_expression_unary(p):
+    """expression : LNOT expression"""
 
 def p_expression_postfix(p):
     """expression : IDENTIFIER PLUSPLUS
     | IDENTIFIER MINUSMINUS"""
-
-
-def p_expression_selector(p):
-    """expression : expression DOT IDENTIFIER"""
-
-
-def p_expression_list(p):
-    """expression_list : expression_list COMMA expression
-    | expression"""
-
-
-def p_func_call(p):
-    """expression : IDENTIFIER LPAREN argument_list RPAREN"""
-
-
-def p_argument_list(p):
-    """argument_list : expression_list
-    | empty"""
-
-
 # END Contribution: José Toapanta
-
 
 # START Contribution: Juan Francisco Fernandez
 # If/else conditional statements with optional else clause for branching logic
@@ -290,68 +242,75 @@ def p_argument_list(p):
 # Map literals with key:value pair initialization
 
 def p_if_statement(p):
-    """if_statement : IF expression block
-    | IF expression block ELSE block
-    | IF expression block ELSE if_statement
-    | IF assignment SEMICOLON expression block
-    | IF assignment SEMICOLON expression block ELSE block
-    | IF assignment SEMICOLON expression block ELSE if_statement"""
+    """if_statement : IF if_init if_condition block if_else_clause"""
 
+def p_if_init(p):
+    """if_init : short_assignment SEMICOLON
+    | simple_assignment SEMICOLON
+    | empty"""
 
-def p_type_declaration(p):
-    """type_declaration : TYPE IDENTIFIER struct_type optional_semicolon
-    | TYPE IDENTIFIER primitive_type optional_semicolon
-    | TYPE IDENTIFIER slice_type optional_semicolon
-    | TYPE IDENTIFIER array_type optional_semicolon
-    | TYPE IDENTIFIER map_type optional_semicolon
-    | TYPE IDENTIFIER IDENTIFIER optional_semicolon"""
+def p_if_condition(p):
+    """if_condition : expression"""
 
+def p_if_else_clause(p):
+    """if_else_clause : ELSE block
+    | ELSE if_statement
+    | empty"""
 
-def p_struct_type(p):
-    """struct_type : STRUCT LBRACE RBRACE
-    | STRUCT LBRACE field_list RBRACE"""
+def p_map_type(p):
+    """map_type : MAP LBRACKET primitive_type RBRACKET primitive_type"""
 
+def p_expression_map(p):
+    """expression : map_type LBRACE expression_map_list RBRACE
+    | map_type LBRACE RBRACE"""
+
+def p_expression_map_list(p):
+    """expression_map_list : key_value
+    | expression_map_list COMMA key_value"""
+
+def p_key_value(p):
+    """key_value : expression COLON expression"""
 
 def p_field_list(p):
     """field_list : field_declaration
     | field_list SEMICOLON field_declaration"""
 
-
 def p_field_declaration(p):
     """field_declaration : IDENTIFIER type"""
-
 
 def p_method_declaration(p):
     "method_declaration : FUNC LPAREN receiver RPAREN IDENTIFIER LPAREN parameter_list RPAREN return_type block"
 
-
 def p_receiver(p):
-    """receiver : IDENTIFIER type
-    | IDENTIFIER TIMES IDENTIFIER"""
+    """receiver : IDENTIFIER IDENTIFIER
+    | IDENTIFIER TIMES IDENTIFIER
+    | IDENTIFIER TIMES type"""
 
+def p_type_declaration(p):
+    """type_declaration : TYPE IDENTIFIER type_alias"""
 
-def p_map_type(p):
-    """map_type : MAP LBRACKET primitive_type RBRACKET type"""
+def p_type_alias(p):
+    """type_alias : struct_type
+    | type
+    | IDENTIFIER"""
 
+def p_struct_type(p):
+    """struct_type : STRUCT LBRACE RBRACE
+    | STRUCT LBRACE field_list RBRACE"""
 
 def p_keyed_element_list(p):
-    """keyed_element_list : keyed_element_list COMMA keyed_element
-    | keyed_element"""
-
+    """keyed_element_list : keyed_element
+    | keyed_element_list COMMA keyed_element"""
 
 def p_keyed_element(p):
     """keyed_element : IDENTIFIER COLON expression
     | INT COLON expression
     | expression"""
 
-
 def p_expression_composite_literal(p):
     """expression : IDENTIFIER LBRACE keyed_element_list RBRACE
     | IDENTIFIER LBRACE RBRACE"""
-
-
 # END Contribution: Juan Francisco Fernandez
-
 
 # START Contribution: Nicolas Fiallo
 # Switch statement declaration
@@ -362,48 +321,57 @@ def p_expression_composite_literal(p):
 # Variadic functions calls validated
 # Print/Input statements: fmt.Println/Printf/Scanf with variadic argument support
 
-def p_case_clauses(p):
-    """case_clauses : case_clause
-    | case_clauses case_clause"""
-
-
-def p_case_clause(p):
-    """case_clause : CASE expression_list COLON case_body
-    | DEFAULT COLON case_body"""
-
-
-def p_case_body(p):
-    """case_body : empty
-    | statement_list
-    | FALLTHROUGH"""
-
+def p_switch_statement(p):
+    """switch_statement : SWITCH switch_init switch_expression LBRACE case_clauses RBRACE"""
 
 def p_switch_init(p):
-    """switch_init : assignment SEMICOLON
+    """switch_init : short_assignment SEMICOLON
+    | simple_assignment SEMICOLON
     | empty"""
-
 
 def p_switch_expression(p):
     """switch_expression : expression
     | empty"""
 
+def p_case_clauses(p):
+    """case_clauses : case_clause
+    | case_clauses case_clause"""
 
-def p_switch_statement(p):
-    """switch_statement : SWITCH switch_init switch_expression LBRACE case_clauses RBRACE"""
+def p_case_clause(p):
+    """case_clause : CASE expression_list COLON case_body
+    | DEFAULT COLON case_body"""
 
+def p_case_body(p):
+    """case_body : local_statement_list
+    | BREAK
+    | empty"""
 
-def p_print_statement(p):
-    """expression : IDENTIFIER DOT IDENTIFIER LPAREN argument_list RPAREN"""
+def p_array_type(p):
+    """array_type : LBRACKET INT RBRACKET primitive_type"""
 
+def p_expression_array(p):
+    """expression : array_type LBRACE expression_list RBRACE
+    | array_type LBRACE RBRACE"""
+    
+def p_expression_selector(p):
+    """expression : expression DOT IDENTIFIER"""
 
-def p_input_statement(p):
-    """expression : IDENTIFIER DOT IDENTIFIER LPAREN AND IDENTIFIER COMMA argument_list RPAREN"""
+def p_expression_method_call(p):
+    """expression : expression DOT IDENTIFIER LPAREN argument_list RPAREN"""
 
+def p_expression_index(p):
+    """expression : expression LBRACKET expression RBRACKET"""
+
+def p_func_call(p):
+    """expression : IDENTIFIER LPAREN argument_list RPAREN"""
+
+def p_argument_list(p):
+    """argument_list : expression_list
+    | empty"""
 # END Contribution: Nicolas Fiallo
 
 parse_errors = []
 suppress_errors = False
-
 
 def p_error(p):
     global parse_errors, suppress_errors
