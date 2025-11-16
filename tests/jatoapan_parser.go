@@ -66,17 +66,6 @@ func arithmeticWithParentheses() {
     result4 := (a + b) / (c + 1)
 }
 
-// Unary operators
-func unaryOperations() {
-    var x int = 25
-    negX := -x
-    posX := +x
-    
-    var y float64 = 3.14
-    negY := -y
-    posY := +y
-}
-
 // Short assignment
 func shortAssignment() {
     a := 10

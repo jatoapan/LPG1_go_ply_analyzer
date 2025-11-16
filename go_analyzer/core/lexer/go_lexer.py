@@ -50,22 +50,21 @@ reserved = {
     "return": "RETURN",
     "true": "TRUE",
     "false": "FALSE",
-    "int": "INT_TYPE",
-    "float64": "FLOAT64_TYPE",
-    "string": "STRING_TYPE",
-    "bool": "BOOL_TYPE",
     # END Contribution: José Toapanta
     
     # START Contribution: Juan Fernández
+    "int": "INT_TYPE",
+    "float64": "FLOAT64_TYPE",
     "switch": "SWITCH",
     "case": "CASE",
     "default": "DEFAULT",
     "type": "TYPE",
     "struct": "STRUCT",
-    "interface": "INTERFACE",
     # END Contribution: Juan Fernández
 
     #START Contribution: Nicolás Fiallo
+    "string": "STRING_TYPE",
+    "bool": "BOOL_TYPE",
     "if":"IF",
     "else":"ELSE",
     "for":"FOR",

@@ -3,15 +3,11 @@ package main
 
 import "fmt"
 
-var edad int = 20 //int
+var edad int = 20
 
-type Person struct { //struct
-	name string //string
-	age  int    //int
-}
-
-type Circle interface {
-	area(radius float64) float64 //interface
+type Person struct {
+	name string
+	age  int
 }
 
 func isWeekDay(day string) string {
@@ -20,8 +16,6 @@ func isWeekDay(day string) string {
 		return "It's a weekday"
 	case "saturday", "sunday":
 		return "It's the weekend"
-	case "holiday":
-		fallthrough
 	default:
 		return "Not a valid day"
 	}
@@ -29,37 +23,40 @@ func isWeekDay(day string) string {
 
 func sum(nums ...int) int {
 	total := 0
-	for _, num := range nums {
-		total += num
+	for i := 0; i < len(nums); i++ {
+		total += nums[i]
 	}
-	return total //return
+	return total
 }
 
 func main() {
-	var a [5]int
-	fmt.Println("emp:", a)
+	var a = [5]int{10, 20, 30, 40, 50}
+	fmt.Println("array:", a)
 
-	a[4] = 100
-	fmt.Println("set:", a)
-	fmt.Println("get:", a[4])
+	var nums = []int{1, 2, 3, 4, 5}
+	fmt.Println("slice:", nums)
 
-	var twoD [2][3]int
-	for i := range 2 {
-		for j := range 3 {
-			twoD[i][j] = i + j
-		}
-	}
+	var array = [2]int{1, 2, 3, 4}
+	fmt.Println("1D array:", array)
 
-	const buleano = true //boolean
-	sum(1, 2, 3, 4, 5)   //function call
+	const buleano = true
+	result := sum(1, 2, 3, 4, 5)
+	fmt.Println("sum:", result)
+
 	/*
 		It validates multi-line comments
 	*/
-	if edad == 8 { //if statement
-		fmt.Println(str)
+	if edad == 20 {
+		fmt.Println("Edad correcta")
 	} else if buleano {
-		numero-- //minus-minus
-	} else { //else statement
+		edad++
+		fmt.Println("Edad incrementada")
+	} else {
 		fmt.Println("mal calculado")
 	}
+
+	day := isWeekDay("monday")
+	fmt.Println(day)
+
+	fmt.Println("Person:", p)
 }

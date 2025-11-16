@@ -1,0 +1,386 @@
+======================================================================
+Go Language Parser - Syntax Analysis Report
+======================================================================
+File: tests/nfiallo5_parser.go
+User: jo
+Date: 2025-11-16 05:27:40
+======================================================================
+
+SOURCE CODE:
+----------------------------------------------------------------------
+   1 | // Algorithm to validate syntax highlighting for Nicolás Fiallo's contributions
+   2 | package main
+   3 | 
+   4 | import "fmt"
+   5 | 
+   6 | var edad int = 20
+   7 | 
+   8 | type Person struct {
+   9 | 	name string
+  10 | 	age  int
+  11 | }
+  12 | 
+  13 | func isWeekDay(day string) string {
+  14 | 	switch day {
+  15 | 	case "monday", "tuesday", "wednesday", "thursday", "friday":
+  16 | 		return "It's a weekday"
+  17 | 	case "saturday", "sunday":
+  18 | 		return "It's the weekend"
+  19 | 	default:
+  20 | 		return "Not a valid day"
+  21 | 	}
+  22 | }
+  23 | 
+  24 | func sum(nums ...int) int {
+  25 | 	total := 0
+  26 | 	for i := 0; i < len(nums); i++ {
+  27 | 		total += nums[i]
+  28 | 	}
+  29 | 	return total
+  30 | }
+  31 | 
+  32 | func main() {
+  33 | 	var a = [5]int{10, 20, 30, 40, 50}
+  34 | 	fmt.Println("array:", a)
+  35 | 
+  36 | 	var nums = []int{1, 2, 3, 4, 5}
+  37 | 	fmt.Println("slice:", nums)
+  38 | 
+  39 | 	var array = [2]int{1, 2, 3, 4}
+  40 | 	fmt.Println("1D array:", array)
+  41 | 
+  42 | 	const buleano = true
+  43 | 	result := sum(1, 2, 3, 4, 5)
+  44 | 	fmt.Println("sum:", result)
+  45 | 
+  46 | 	/*
+  47 | 		It validates multi-line comments
+  48 | 	*/
+  49 | 	if edad == 20 {
+  50 | 		fmt.Println("Edad correcta")
+  51 | 	} else if buleano {
+  52 | 		edad++
+  53 | 		fmt.Println("Edad incrementada")
+  54 | 	} else {
+  55 | 		fmt.Println("mal calculado")
+  56 | 	}
+  57 | 
+  58 | 	day := isWeekDay("monday")
+  59 | 	fmt.Println(day)
+  60 | 
+  61 | 	fmt.Println("Person:", p)
+  62 | }
+----------------------------------------------------------------------
+
+PRODUCTIONS RECOGNIZED:
+----------------------------------------------------------------------
+✔ package_declaration
+✔ simple_import
+✔ import
+✔ primitive_type
+✔ type
+✔ expression
+✔ global_var_dec
+✔ global_statement
+✔ global_statement_list
+✔ primitive_type
+✔ type
+✔ field_declaration
+✔ field_list
+✔ primitive_type
+✔ type
+✔ field_declaration
+✔ field_list
+✔ struct_type
+✔ type_alias
+✔ type_declaration
+✔ global_statement
+✔ global_statement_list
+✔ primitive_type
+✔ type
+✔ parameter
+✔ parameter_list
+✔ primitive_type
+✔ type
+✔ return_type
+✔ primary_expression
+✔ switch_expr
+✔ expression
+✔ case_expression_list
+✔ expression
+✔ case_expression_list
+✔ expression
+✔ case_expression_list
+✔ expression
+✔ case_expression_list
+✔ expression
+✔ case_expression_list
+✔ expression
+✔ return_list
+✔ return_statement
+✔ local_statement
+✔ local_statement_list
+✔ case_body
+✔ case_clause
+✔ case_clause_list
+✔ expression
+✔ case_expression_list
+✔ expression
+✔ case_expression_list
+✔ expression
+✔ return_list
+✔ return_statement
+✔ local_statement
+✔ local_statement_list
+✔ case_body
+✔ case_clause
+✔ case_clause_list
+✔ expression
+✔ return_list
+✔ return_statement
+✔ local_statement
+✔ local_statement_list
+✔ case_body
+✔ case_clause
+✔ case_clause_list
+✔ switch_statement
+✔ local_statement
+✔ local_statement_list
+✔ block
+✔ function_declaration
+✔ global_statement
+✔ global_statement_list
+✔ primitive_type
+✔ parameter
+✔ parameter_list
+✔ primitive_type
+✔ type
+✔ return_type
+✔ expression
+✔ short_assignment
+✔ local_statement
+✔ local_statement_list
+✔ expression
+✔ short_assignment
+✔ for_init
+✔ expression
+✔ binary_operator
+✔ expression
+✔ expression_list
+✔ argument_list
+✔ func_call
+✔ expression_binary
+✔ for_cond
+✔ expression_postfix
+✔ for_post
+✔ operator_assign
+✔ expression
+✔ expression
+✔ expression_index
+✔ assignment_compound
+✔ local_statement
+✔ local_statement_list
+✔ block
+✔ for_classic
+✔ for_statement
+✔ local_statement
+✔ local_statement_list
+✔ expression
+✔ return_list
+✔ return_statement
+✔ local_statement
+✔ local_statement_list
+✔ block
+✔ function_declaration
+✔ global_statement
+✔ global_statement_list
+✔ parameter_list
+✔ return_type
+✔ primitive_type
+✔ array_type
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression_array
+✔ local_var_dec
+✔ local_statement
+✔ local_statement_list
+✔ expression
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ argument_list
+✔ expression_method_call
+✔ local_statement
+✔ local_statement_list
+✔ primitive_type
+✔ slice_type
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression_slice
+✔ local_var_dec
+✔ local_statement
+✔ local_statement_list
+✔ expression
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ argument_list
+✔ expression_method_call
+✔ local_statement
+✔ local_statement_list
+✔ primitive_type
+✔ array_type
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression_array
+✔ local_var_dec
+✔ local_statement
+✔ local_statement_list
+✔ expression
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ argument_list
+✔ expression_method_call
+✔ local_statement
+✔ local_statement_list
+✔ expression
+✔ local_const_dec
+✔ local_statement
+✔ local_statement_list
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ argument_list
+✔ func_call
+✔ short_assignment
+✔ local_statement
+✔ local_statement_list
+✔ expression
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ argument_list
+✔ expression_method_call
+✔ local_statement
+✔ local_statement_list
+✔ expression
+✔ binary_operator
+✔ expression
+✔ expression_binary
+✔ expression
+✔ expression
+✔ expression_list
+✔ argument_list
+✔ expression_method_call
+✔ local_statement
+✔ local_statement_list
+✔ block
+✔ expression
+✔ expression_postfix
+✔ local_statement
+✔ local_statement_list
+✔ expression
+✔ expression
+✔ expression_list
+✔ argument_list
+✔ expression_method_call
+✔ local_statement
+✔ local_statement_list
+✔ block
+✔ expression
+✔ expression
+✔ expression_list
+✔ argument_list
+✔ expression_method_call
+✔ local_statement
+✔ local_statement_list
+✔ block
+✔ if_statement
+✔ if_statement
+✔ local_statement
+✔ local_statement_list
+✔ expression
+✔ expression_list
+✔ argument_list
+✔ func_call
+✔ short_assignment
+✔ local_statement
+✔ local_statement_list
+✔ expression
+✔ expression
+✔ expression_list
+✔ argument_list
+✔ expression_method_call
+✔ local_statement
+✔ local_statement_list
+✔ expression
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ argument_list
+✔ expression_method_call
+✔ local_statement
+✔ local_statement_list
+✔ block
+✔ function_declaration
+✔ global_statement
+✔ global_statement_list
+✔ program
+
+✓ No syntax errors detected
+
+VALIDATED GRAMMAR RULES:
+----------------------------------------------------------------------
+✓ Package declaration
+✓ Import statements
+✓ Function declarations
+✓ Variable declarations
+✓ Constant declarations
+✓ Short variable declarations
+✓ If statements
+✓ Else clauses
+✓ For loops
+✓ Switch statements
+✓ Struct type declarations
+✓ Slice types
+✓ Array types
+✓ Post-increment/decrement
+✓ Arithmetic expressions
+✓ Relational operators
+
+======================================================================

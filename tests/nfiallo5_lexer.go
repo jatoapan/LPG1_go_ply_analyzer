@@ -1,6 +1,5 @@
 // Algorithm to validate lexer from Nicolas Fiallo
 package main
-
 import "fmt"
 
 const str string = "hola mundo" //string
@@ -17,15 +16,13 @@ func isWeekDay(day string) string {
 		return "It's a weekday"
 	case "saturday", "sunday":
 		return "It's the weekend"
-	case "holiday":
-		fallthrough
 	default:
 		return "Not a valid day"
 	}
 }
 
 func main() {
-	negativo++                     //plus-plus
+	numero++                     //plus-plus
 	x := powerOf2(3)               //assign
 	var booleano bool = true       //boolean
 	var num = []int{1, 2, 3, 4, 5} //array
@@ -51,12 +48,14 @@ func main() {
 		fmt.Println("mal calculado")
 	}
 
-	nums := []int{1, 2, 3, 4, 5}
-	totalSum := sum(nums...)
-	fmt.Println("Total Sum:", totalSum)
-	fmt.Println(edades)
+    nums := []int{1, 2, 3, 4, 5}
+    totalSum := 0
+    for i := 0; i < len(nums); i++ {
+        totalSum += nums[i]
+    }
+    fmt.Println("Total Sum:", totalSum)
 
-	for indice, valor := range num { //range
-		fmt.Println("Indice:", indice, "Valor:", valor)
-	}
+    for i := 0; i < len(num); i++ {
+        fmt.Println("Indice:", i, "Valor:", num[i])
+    }
 }

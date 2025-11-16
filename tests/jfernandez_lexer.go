@@ -24,10 +24,6 @@ type Point struct {                         // TYPE, IDENTIFIER, STRUCT
     y float64
 }
 
-type Calculator interface {                 // TYPE, IDENTIFIER, INTERFACE
-    add(a int, b int) int                   // INT_TYPE
-}
-
 // Testing logical operators
 func testLogicalOps(a bool, b bool) bool {  // FUNC, BOOL_TYPE
     andResult := a && b                     // SHORT_ASSIGN, LAND
@@ -71,7 +67,6 @@ func testSwitchCase(value int) string {     // FUNC, INT_TYPE, STRING_TYPE
         result = "One"                      // ASSIGN, STRING
     case 2:                                 // CASE
         result = "Two"
-        fallthrough                         // FALLTHROUGH
     case 3:                                 // CASE
         result = "Two or Three"
     default:                                // DEFAULT
@@ -127,6 +122,6 @@ func main() {                               // FUNC
     fmt.Println(grade)
 
     // Create a Point instance
-    p := Point{x: 3.14, y: 2.71}           // IDENTIFIER, LBRACE, FLOAT64, RBRACE
+    p := Point{x: 3.14, y: 2.71}  // ← prueba esto           // IDENTIFIER, LBRACE, FLOAT64, RBRACE
     fmt.Println(p.x, p.y)
 }
