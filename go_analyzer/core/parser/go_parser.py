@@ -13,12 +13,30 @@ import os
 # Variable assignment with all primitive types (int, float64, string, bool) supporting explicit and type inference
 # Complete expression evaluation with literals, identifiers, post-increment/decrement, and parenthesized grouping
 
+precedence = (
+    ("right", "LNOT"),
+    ("right", "UMINUS", "UPLUS"),
+    ("left", "TIMES", "DIVIDE", "MODULE"),
+    ("left", "PLUS", "MINUS"),
+    ("left", "LSHIFT", "RSHIFT"),
+    ("left", "AND"),
+    ("left", "XOR"),
+    ("left", "OR"),
+    ("left", "LT", "LE", "GT", "GE"),
+    ("left", "EQ", "NEQ"),
+    ("left", "LAND"),
+    ("left", "LOR"),
+)
+
 parse_errors = []
 success_log = []
 suppress_errors = False
 
 context_stack = [{
     "variables": {},
+    "tipos": {
+        "str-funciones": ["len"],
+    }
 }]
 
 def log_info(msg):
@@ -45,6 +63,7 @@ def p_import(p):
 def p_simple_import(p):
     """simple_import : IMPORT STRING"""
     log_info("simple_import")
+    context_stack[-1]["variables"][p[2]] = "imported_package"
 
 def p_empty(p):
     "empty :"
@@ -70,9 +89,9 @@ def p_block(p):
 
 def p_statement_list(p):
     """statement_list : statement
-    | statement_list optional_semicolon statement"""
-    if len(p) == 4:
-        p[0] = p[1] + [p[3]]
+    | statement_list statement"""
+    if len(p) == 3:
+        p[0] = p[1] + [p[2]]
     elif len(p) == 2:
         p[0] = [p[1]]
 
@@ -88,7 +107,7 @@ def p_statement(p):
     | switch_statement
     | break_statement
     | continue_statement
-    | fallthrough_statement"""
+    | call_expression"""
     p[0] = p[1]
 
 
@@ -131,33 +150,6 @@ def p_operator_assign(p):
     | RSHIFT_ASSIGN"""
     log_info("operator_assign")
 
-def p_expression_binary(p):
-    """expression : expression binary_operator expression"""
-    log_info("expression_binary")
-
-def p_binary_operator(p):
-    """binary_operator : PLUS
-    | MINUS
-    | TIMES
-    | DIVIDE
-    | MODULE
-    | EQ
-    | NEQ
-    | LT
-    | LE
-    | GT
-    | GE
-    | LAND
-    | LOR
-    | AND
-    | OR
-    | XOR
-    | AND_NOT
-    | LSHIFT
-    | RSHIFT
-    """
-    log_info("binary_operator")
-
 def p_simple_assignment(p):
     """simple_assignment : IDENTIFIER ASSIGN expression"""
     log_info("simple_assignment")
@@ -168,13 +160,7 @@ def p_type(p):
     | array_type
     | map_type"""
     log_info("type")
-
-def p_primitive_type(p):
-    """primitive_type : INT_TYPE
-    | FLOAT64_TYPE
-    | STRING_TYPE
-    | BOOL_TYPE"""
-    log_info("primitive_type")
+    p[0] = p[1]
 
 def p_slice_type(p):
     "slice_type : LBRACKET RBRACKET primitive_type"
@@ -194,18 +180,14 @@ def p_expression_group(p):
     "expression : LPAREN expression RPAREN"
     log_info("expression_group")
 
-def p_expression_literal(p):
-    """expression : INT
-    | FLOAT64
-    | IDENTIFIER
-    | STRING
-    | TRUE
-    | FALSE"""
-    log_info("expression")
-
 def p_short_assignment(p):
     """short_assignment : IDENTIFIER SHORT_ASSIGN expression"""
     log_info("short_assignment")
+    nombre = p[1]
+    tipo = p[3]
+    actual = context_stack[-1]["variables"]
+    actual[nombre] = tipo
+    p[0] = (nombre, tipo)
 
 def p_local_statement(p):
     """local_statement : local_var_dec
@@ -218,8 +200,7 @@ def p_local_statement(p):
     | if_statement
     | switch_statement
     | break_statement
-    | continue_statement
-    | fallthrough_statement"""
+    | continue_statement"""
     p[0] = p[1]
 
 
@@ -299,6 +280,11 @@ def p_return_type(p):
     | empty"""
     log_info("return_type")
 
+def p_return_statement(p):
+    """return_statement : RETURN
+    | RETURN return_list"""
+    log_info("return_statement")
+
 def p_type_list(p):
     """type_list : type_list COMMA type
     | type"""
@@ -315,19 +301,6 @@ def p_assignment(p):
     p[0] = (nombre, tipo)
 
 
-def p_assignment_compound(p):
-    """assignment_compound : IDENTIFIER PLUS_ASSIGN expression
-    | IDENTIFIER MINUS_ASSIGN expression
-    | IDENTIFIER MULT_ASSIGN expression
-    | IDENTIFIER DIV_ASSIGN expression
-    | IDENTIFIER MOD_ASSIGN expression
-    | IDENTIFIER AND_ASSIGN expression
-    | IDENTIFIER OR_ASSIGN expression
-    | IDENTIFIER XOR_ASSIGN expression
-    | IDENTIFIER LSHIFT_ASSIGN expression
-    | IDENTIFIER RSHIFT_ASSIGN expression"""
-
-
 def p_variable_declaration(p):
     """variable_declaration : VAR IDENTIFIER type ASSIGN expression
     | CONST IDENTIFIER type ASSIGN expression
@@ -337,23 +310,12 @@ def p_variable_declaration(p):
     tipo = p[-1]
     context_stack[-1]['variables'][nombre] = tipo
 
-
-def p_type(p):
-    """type : primitive_type
-    | slice_type
-    | array_type
-    | map_type
-    | struct_type
-    | IDENTIFIER"""
-    p[0] = p[1]
-    
-
-
 def p_primitive_type(p):
     """primitive_type : INT_TYPE
     | FLOAT64_TYPE
     | STRING_TYPE
     | BOOL_TYPE"""
+    log_info("primitive_type")
     type = p.slice[1].type
     if type == "INT_TYPE":
         p[0] = "int"
@@ -365,10 +327,6 @@ def p_primitive_type(p):
         p[0] = "bool"
 
 
-def p_slice_type(p):
-    "slice_type : LBRACKET RBRACKET primitive_type"
-
-
 def p_array_type(p):
     """array_type : LBRACKET INT RBRACKET type"""
 
@@ -378,6 +336,8 @@ def p_expression_binary(p):
     | relational_expression
     | logical_expression
     | bitwise_expression"""
+    log_info("expression_binary")
+
 
 
 def p_expression_unary(p):
@@ -385,33 +345,27 @@ def p_expression_unary(p):
     | MINUS expression %prec UMINUS
     | LNOT expression %prec LNOT"""
 
-
-def p_expression_slice(p):
-    """expression : LBRACKET RBRACKET primitive_type LBRACE expression_list RBRACE
-    | LBRACKET RBRACKET primitive_type LBRACE RBRACE"""
-
-
-def p_expression_group(p):
-    "expression : LPAREN expression RPAREN"
-
-
 def p_expression_int(p):
     "expression : INT"
+    log_info("expression")
     p[0] = "int"
 
 
 def p_expression_float(p):
     "expression : FLOAT64"
+    log_info("expression")
     p[0] = "float64"
 
 def p_expression_boolean(p):
     """expression : TRUE
     | FALSE"""
+    log_info("expression")
     p[0] = "bool"
 
 
 def p_expression_identifier(p):
     "expression : IDENTIFIER"
+    log_info("expression")
     nombre = p[1]
     found = False
     for context in context_stack[::-1]:
@@ -425,6 +379,7 @@ def p_expression_identifier(p):
 
 def p_expression_string(p):
     "expression : STRING"
+    log_info("expression")
     p[0] = "str"
 
 
@@ -650,21 +605,12 @@ def p_case_clause(p):
         p[0] = ("default", p[4]) # default, case body
     context_stack[-1]["case_clause"] = p[0]
 
-def p_case_expression_list(p):
-    """case_expression_list : expression
-    | case_expression_list COMMA expression"""
-    log_info("case_expression_list")
-
 def p_case_body(p):
     """case_body : statement_list
     | empty"""
     p[0] = p[1]
     current = context_stack[-1]
     current["case_body"] = p[0]
-
-def p_fallthrough_statement(p):
-    """fallthrough_statement : FALLTHROUGH"""
-    p[0] = p[1]
 
 def p_switch_primary(p):
     """switch_primary : IDENTIFIER
@@ -738,10 +684,16 @@ def p_switch_statement(p):
 
 def p_print_statement(p):
     """print_expression : IDENTIFIER DOT IDENTIFIER LPAREN argument_list RPAREN"""
+    if p[1] != "fmt" or p[2] not in ["Println", "Printf", "Print"]:
+        parse_errors.append(f"Error Semantico: Llamada a funcion de impresion invalida '{p[1]}.{p[2]}'.")
 
 
 def p_input_statement(p):
     """input_expression : IDENTIFIER DOT IDENTIFIER LPAREN AND IDENTIFIER COMMA argument_list RPAREN"""
+
+def p_argument_list(p):
+    """argument_list : expression_list
+    | empty"""
 
 # END Contribution: Nicolas Fiallo
 
