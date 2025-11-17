@@ -233,6 +233,10 @@ __marimo__/
 # Lexer Generated Files (if any)
 **/lextab.py
 
+# Parser Generated Files (if any)
+**/parsetab.py
+**/parser.out
+
 # Keep logs directory for grading purposes
 # All log files should be committed for evaluation
 # !logs/
