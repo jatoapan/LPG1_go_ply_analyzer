@@ -13,26 +13,16 @@ import os
 # Variable assignment with all primitive types (int, float64, string, bool) supporting explicit and type inference
 # Complete expression evaluation with literals, identifiers, post-increment/decrement, and parenthesized grouping
 
-precedence = (
-    ("right", "LNOT"),
-    ("right", "UMINUS", "UPLUS"),
-    ("left", "TIMES", "DIVIDE", "MODULE"),
-    ("left", "PLUS", "MINUS"),
-    ("left", "LSHIFT", "RSHIFT"),
-    ("left", "AND"),
-    ("left", "XOR"),
-    ("left", "OR"),
-    ("left", "LT", "LE", "GT", "GE"),
-    ("left", "EQ", "NEQ"),
-    ("left", "LAND"),
-    ("left", "LOR"),
-)
-
-parse_errors = []
+parse_errors = []        
+syntax_errors = []       
+semantic_errors = []     
 success_log = []
 suppress_errors = False
 
+loop_context_stack = []
+
 context_stack = [{
+    "consts": {},
     "variables": {},
     "tipos": {
         "str-funciones": ["len"],
@@ -43,8 +33,6 @@ def log_info(msg):
     """Registra información de producciones reconocidas"""
     print(f"✔ {msg}")
     success_log.append(f"✔ {msg}")
-
-
 
 def p_program(p):
     """program : package_declaration import global_statement_list"""
@@ -86,7 +74,6 @@ def p_block(p):
     """block : LBRACE enter_block exit_block RBRACE
     | LBRACE enter_block statement_list  exit_block RBRACE"""
 
-
 def p_statement_list(p):
     """statement_list : statement
     | statement_list statement"""
@@ -94,7 +81,6 @@ def p_statement_list(p):
         p[0] = p[1] + [p[2]]
     elif len(p) == 2:
         p[0] = [p[1]]
-
 
 def p_statement(p):
     """statement : assignment
@@ -110,16 +96,25 @@ def p_statement(p):
     | call_expression"""
     p[0] = p[1]
 
-
 def p_global_var_dec(p):
     """global_var_dec : VAR IDENTIFIER type
     | VAR IDENTIFIER type ASSIGN expression
-    | VAR IDENTIFIER ASSIGN expression""" 
+    | VAR IDENTIFIER ASSIGN expression"""
     log_info("global_var_dec")
 
 def p_global_const_dec(p):
     """global_const_dec : CONST IDENTIFIER type ASSIGN expression
     | CONST IDENTIFIER ASSIGN expression"""
+    var_name = p[2]
+    if var_name in context_stack[0]["consts"]:
+        semantic_errors.append(f"Error semántico: La constante '{var_name}' ya fue declarada previamente.")
+    else:
+        context_stack[0]["consts"][var_name] = True
+    if len(p) == 6:
+        tipo = p[3]
+    else:
+        tipo = p[4]
+    context_stack[0]["variables"][var_name] = tipo
     log_info("global_const_dec")
 
 def p_local_var_dec(p):
@@ -131,10 +126,23 @@ def p_local_var_dec(p):
 def p_local_const_dec(p):
     """local_const_dec : CONST IDENTIFIER type ASSIGN expression
     | CONST IDENTIFIER ASSIGN expression"""
+    var_name = p[2]
+    if var_name in context_stack[0]["consts"]:
+        semantic_errors.append(f"Error semántico: La constante '{var_name}' ya fue declarada previamente.")
+    else:
+        context_stack[0]["consts"][var_name] = True
+    if len(p) == 6:
+        tipo = p[3]
+    else:
+        tipo = p[4]
+    context_stack[-1]["variables"][var_name] = tipo
     log_info("local_const_dec")
 
 def p_assignment_compound(p):
     """assignment_compound : IDENTIFIER operator_assign expression"""
+    var_name = p[1]
+    if var_name in context_stack[0]["consts"]:
+        semantic_errors.append(f"Error semántico: La constante '{var_name}' no puede ser modificada")
     log_info("assignment_compound")
 
 def p_operator_assign(p):
@@ -203,19 +211,22 @@ def p_local_statement(p):
     | continue_statement"""
     p[0] = p[1]
 
-
 def p_break_statement(p):
-    "break_statement : BREAK"
-
+    """break_statement : BREAK"""
+    if not any(ctx == "loop" for ctx in loop_context_stack):
+        semantic_errors.append("Error semántico: 'break' solo puede usarse dentro de un loop")
+    log_info("break_statement")
 
 def p_continue_statement(p):
-    "continue_statement : CONTINUE"
+    """continue_statement : CONTINUE"""
+    if not any(ctx == "loop" for ctx in loop_context_stack):
+        semantic_errors.append("Error semántico: 'continue' solo puede usarse dentro de un loop")
+    log_info("continue_statement")
 
 def p_local_statement_list(p):
     """local_statement_list : local_statement
     | local_statement_list local_statement"""
     log_info("local_statement_list")
-
 
 def p_for_statement(p):
     """for_statement : for_classic
@@ -223,16 +234,25 @@ def p_for_statement(p):
     | for_infinite"""
     log_info("for_statement")
 
+def p_push_loop(p):
+    """push_loop : """
+    loop_context_stack.append("loop")
+
+def p_pop_loop(p):
+    """pop_loop : """
+    if loop_context_stack:
+        loop_context_stack.pop()
+
 def p_for_classic(p):
-    """for_classic : FOR for_init SEMICOLON for_cond SEMICOLON for_post block"""
+    """for_classic : FOR for_init SEMICOLON for_cond SEMICOLON for_post push_loop block pop_loop"""
     log_info("for_classic")
 
 def p_for_condition(p):
-    """for_condition : FOR expression block"""
+    """for_condition : FOR expression push_loop block pop_loop"""
     log_info("for_condition")
 
 def p_for_infinite(p):
-    """for_infinite : FOR block"""
+    """for_infinite : FOR push_loop block pop_loop"""
     log_info("for_infinite")
 
 def p_for_init(p):
@@ -290,16 +310,16 @@ def p_type_list(p):
     | type"""
     log_info("type_list")
 
-
 def p_assignment(p):
     """assignment : IDENTIFIER ASSIGN expression
     | IDENTIFIER SHORT_ASSIGN expression"""
     nombre = p[1]
+    if nombre in context_stack[0]["consts"]:
+        semantic_errors.append(f"Error semántico: La constante '{nombre}' no puede ser modificada")
     tipo = p[3]
     actual = context_stack[-1]["variables"]
     actual[nombre] = tipo
     p[0] = (nombre, tipo)
-
 
 def p_variable_declaration(p):
     """variable_declaration : VAR IDENTIFIER type ASSIGN expression
@@ -326,30 +346,24 @@ def p_primitive_type(p):
     elif type == "BOOL_TYPE":
         p[0] = "bool"
 
-
 def p_array_type(p):
     """array_type : LBRACKET INT RBRACKET type"""
-
 
 def p_expression_binary(p):
     """expression : binary_expression
     | relational_expression
     | logical_expression
     | bitwise_expression"""
-    log_info("expression_binary")
-
-
+    log_info("expression")
 
 def p_expression_unary(p):
-    """expression : PLUS expression %prec UPLUS
-    | MINUS expression %prec UMINUS
-    | LNOT expression %prec LNOT"""
+    """expression : LNOT expression"""
+    log_info("expression_unary")
 
 def p_expression_int(p):
     "expression : INT"
     log_info("expression")
     p[0] = "int"
-
 
 def p_expression_float(p):
     "expression : FLOAT64"
@@ -362,7 +376,6 @@ def p_expression_boolean(p):
     log_info("expression")
     p[0] = "bool"
 
-
 def p_expression_identifier(p):
     "expression : IDENTIFIER"
     log_info("expression")
@@ -374,18 +387,19 @@ def p_expression_identifier(p):
             found = True
             break
     if not found:
-        parse_errors.append(f"Error Semantico: Variable {nombre} no se encuentra definida.")
-
+        semantic_errors.append(f"Error Semantico: Variable {nombre} no se encuentra definida.")
 
 def p_expression_string(p):
     "expression : STRING"
     log_info("expression")
     p[0] = "str"
 
-
 def p_expression_postfix(p):
     """expression : IDENTIFIER PLUSPLUS
     | IDENTIFIER MINUSMINUS"""
+    var_name = p[1]
+    if var_name in context_stack[0]["consts"]:
+        semantic_errors.append(f"Error semántico: La constante '{var_name}' ya fue declarada previamente.")
     log_info("expression_postfix")
 # END Contribution: José Toapanta
 
@@ -503,7 +517,7 @@ def find_variable(name):
     for context in context_stack[::-1]:
         if name in context["variables"]:
             return context["variables"][name], context
-    parse_errors.append(f"Error Semantico: Variable {name} no se encuentra definida.")
+    semantic_errors.append(f"Error Semantico: Variable {name} no se encuentra definida.")
     return None, None
 
 def p_binary_expression(p):
@@ -515,11 +529,6 @@ def p_binary_expression(p):
 
 def p_grouped_expression(p):
     """grouped_expression : LPAREN expression RPAREN"""
-
-def p_unary_expression(p):
-    """unary_expression : PLUS expression %prec UPLUS
-    | MINUS expression %prec UMINUS
-    | LNOT expression %prec LNOT"""
 
 def p_relational_expression(p):
     """relational_expression : expression EQ expression
@@ -588,7 +597,6 @@ def p_case_clauses(p):
     else:
         p[0] = [p[1]]
 
-
 def p_case_clause(p):
     """case_clause : CASE case_expression_list COLON enter_block case_body exit_block
     | DEFAULT COLON enter_block case_body exit_block"""
@@ -598,7 +606,7 @@ def p_case_clause(p):
 
         for expression in expression_types:
             if expression != parent_expected_type:
-                    parse_errors.append(f"Error Semantico: Tipo de expresion en case '{expression}' no coincide con tipo esperado '{parent_expected_type}'.")
+                    semantic_errors.append(f"Error Semantico: Tipo de expresion en case '{expression}' no coincide con tipo esperado '{parent_expected_type}'.")
         
         p[0] = ("case", p[2], p[5]) # case, case expressions, case body
     else:
@@ -632,7 +640,7 @@ def p_switch_primary(p):
 
 def p_switch_init(p):
     """switch_init : assignment SEMICOLON switch_expression"""
-    p[0] = (p[1], p[3]) # assignment, expression
+    p[0] = (p[1], p[3])
 
 def p_switch_expression(p):
     """switch_expression : switch_primary
@@ -669,14 +677,14 @@ def p_switch_statement(p):
     current = context_stack[-1]
     current["switch_expression"] = switch_type
     if assignment and not expression:
-        parse_errors.append("Error Semantico: Switch con inicializacion debe tener expresion.")
+        semantic_errors.append("Error Semantico: Switch con inicializacion debe tener expresion.")
     clauses = p[5]
     default = False
     for clause in clauses:
         clause_type = clause[0]
         if clause_type == "default":
             if default:
-                parse_errors.append("Error Semantico: Multiple default clauses en el switch statement.")
+                semantic_errors.append("Error Semantico: Multiple default clauses en el switch statement.")
             default = True
     p[0] = clauses
 
@@ -685,7 +693,7 @@ def p_switch_statement(p):
 def p_print_statement(p):
     """print_expression : IDENTIFIER DOT IDENTIFIER LPAREN argument_list RPAREN"""
     if p[1] != "fmt" or p[2] not in ["Println", "Printf", "Print"]:
-        parse_errors.append(f"Error Semantico: Llamada a funcion de impresion invalida '{p[1]}.{p[2]}'.")
+        semantic_errors.append(f"Error Semantico: Llamada a funcion de impresion invalida '{p[1]}.{p[2]}'.")
 
 
 def p_input_statement(p):
@@ -698,141 +706,188 @@ def p_argument_list(p):
 # END Contribution: Nicolas Fiallo
 
 def p_error(p):
-    global parse_errors, suppress_errors
-    if suppress_errors:
-        if p:
-            parse_errors.append(f"Syntax error at '{p.value}' (line {p.lineno})")
-        else:
-            parse_errors.append("Syntax error at EOF")
+    if p:
+        msg = f"Syntax error at '{p.value}' (line {p.lineno})"
     else:
-        if p:
-            print(f"Syntax error at '{p.value}'")
-        else:
-            print("Syntax error at EOF")
+        msg = "Syntax error at EOF"
+    print(msg)
+    syntax_errors.append(msg)  # ← CAMBIO AQUÍ
 
 
 parser = yacc.yacc()
 parse_log = []
 
 def run_parser(file_path, github_user):
-    global parse_errors, suppress_errors, success_log
-    parse_errors = []
+    global syntax_errors, semantic_errors, suppress_errors, success_log, context_stack
+    syntax_errors = []
+    semantic_errors = []
     success_log = []
     suppress_errors = True
-    with open(file_path, "r", encoding="utf-8") as input_file:
-        source_code = input_file.read()
-        user_id = github_user.lower().replace(" ", "")
-        now = datetime.now().strftime("%d-%m-%Y-%Hh%M")
-        log_file_path = f"./logs/parser-{user_id}-{now}.txt"
-        os.makedirs("./logs", exist_ok=True)
-        with open(log_file_path, "w", encoding="utf-8") as log_file:
-            log_file.write("=" * 70 + "\n")
-            log_file.write("Go Language Parser - Syntax Analysis Report\n")
-            log_file.write("=" * 70 + "\n")
-            log_file.write(f"File: {file_path}\n")
-            log_file.write(f"User: {github_user}\n")
-            log_file.write(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-            log_file.write("=" * 70 + "\n\n")
-            log_file.write("SOURCE CODE:\n")
-            log_file.write("-" * 70 + "\n")
-            for i, line in enumerate(source_code.split("\n"), 1):
-                log_file.write(f"{i:4d} | {line}\n")
-            log_file.write("-" * 70 + "\n\n")
-            try:
-                result = parser.parse(source_code, lexer=lexer, debug=False)
-                log_file.write("PRODUCTIONS RECOGNIZED:\n")
-                log_file.write("-" * 70 + "\n")
-                if success_log:
-                    for entry in success_log:
-                        log_file.write(f"{entry}\n")
-                else:
-                    log_file.write("No productions logged\n")
-                log_file.write("\n")
+    context_stack = [{"consts": {}, "variables": {}}]
+    
+    with open(file_path, 'r', encoding='utf-8') as file:
+        source_code = file.read()
 
-                if parse_errors:
-                    log_file.write("SYNTAX ERRORS:\n")
-                    log_file.write("-" * 70 + "\n")
-                    for error in parse_errors:
-                        log_file.write(f"✗ {error}\n")
-                    log_file.write("\n")
-                else:
-                    log_file.write("✓ No syntax errors detected\n\n")
-                log_file.write("VALIDATED GRAMMAR RULES:\n")
+    user_id = github_user.lower().replace(" ", "")
+    now = datetime.now().strftime("%d-%m-%Y-%Hh%M")
+    log_file_path = f"./logs/semantic-{user_id}-{now}.txt"
+    os.makedirs("./logs", exist_ok=True)
+
+    with open(log_file_path, 'w', encoding='utf-8') as log_file:
+        # ============ HEADER ============
+        log_file.write("=" * 70 + "\n")
+        log_file.write("Go Language Parser - Syntax & Semantic Analysis Report\n")
+        log_file.write("=" * 70 + "\n")
+        log_file.write(f"File: {file_path}\n")
+        log_file.write(f"User: {github_user}\n")
+        log_file.write(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+        log_file.write("=" * 70 + "\n\n")
+        
+        # ============ SOURCE CODE ============
+        log_file.write("SOURCE CODE:\n")
+        log_file.write("-" * 70 + "\n")
+        for i, line in enumerate(source_code.split("\n"), 1):
+            log_file.write(f"{i:4d} | {line}\n")
+        log_file.write("-" * 70 + "\n\n")
+        
+        try:
+            # ============ PARSING ============
+            result = parser.parse(source_code, lexer=lexer, debug=False)
+            
+            # ============ PRODUCCIONES RECONOCIDAS ============
+            log_file.write("PRODUCTIONS RECOGNIZED:\n")
+            log_file.write("-" * 70 + "\n")
+            if success_log:
+                for entry in success_log:
+                    log_file.write(f"{entry}\n")
+            else:
+                log_file.write("No productions logged\n")
+            log_file.write("\n")
+            
+            # ============ ERRORES SINTÁCTICOS ============
+            if syntax_errors:
+                log_file.write("SYNTAX ERRORS:\n")
                 log_file.write("-" * 70 + "\n")
-                features_found = []
-                if "package " in source_code:
-                    features_found.append("✓ Package declaration")
-                if "import " in source_code:
-                    features_found.append("✓ Import statements")
-                if "func " in source_code:
-                    features_found.append("✓ Function declarations")
-                if "var " in source_code:
-                    features_found.append("✓ Variable declarations")
-                if "const " in source_code:
-                    features_found.append("✓ Constant declarations")
-                if ":=" in source_code:
-                    features_found.append("✓ Short variable declarations")
-                if "if " in source_code:
-                    features_found.append("✓ If statements")
-                if "else" in source_code:
-                    features_found.append("✓ Else clauses")
-                if "for " in source_code:
-                    features_found.append("✓ For loops")
-                if "break" in source_code:
-                    features_found.append("✓ Break statements")
-                if "continue" in source_code:
-                    features_found.append("✓ Continue statements")
-                if "switch " in source_code:
-                    features_found.append("✓ Switch statements")
-                if "type " in source_code and "struct" in source_code:
-                    features_found.append("✓ Struct type declarations")
-                if "[]" in source_code:
-                    features_found.append("✓ Slice types")
-                if "[" in source_code and "]" in source_code:
-                    features_found.append("✓ Array types")
-                if "++" in source_code or "--" in source_code:
-                    features_found.append("✓ Post-increment/decrement")
-                if any(op in source_code for op in ["+", "-", "*", "/", "%"]):
-                    features_found.append("✓ Arithmetic expressions")
-                if any(op in source_code for op in ["==", "!=", "<", ">", "<=", ">="]):
-                    features_found.append("✓ Relational operators")
-                if any(op in source_code for op in ["&&", "||", "!"]):
-                    features_found.append("✓ Logical operators")
-                for feature in features_found:
-                    log_file.write(f"{feature}\n")
+                for err in syntax_errors:
+                    log_file.write(f"✗ {err}\n")
                 log_file.write("\n")
-                log_file.write("=" * 70 + "\n")
-                print(f"\n{'=' * 70}")
-                if parse_errors:
-                    print("⚠️  PARSING COMPLETED WITH ERRORS")
-                    print(f"{'=' * 70}")
-                    print(f"Syntax errors: {len(parse_errors)}")
-                    for error in parse_errors[:5]:
-                        print(f"  ✗ {error}")
-                    if len(parse_errors) > 5:
-                        print(f"  ... and {len(parse_errors) - 5} more")
-                else:
-                    print("✅ PARSING SUCCESSFUL!")
-                    print(f"{'=' * 70}")
-                
-                print(f"\nProductions recognized: {len(success_log)}")
-                print(f"Features detected: {len(features_found)}")
-                print(f"\n📄 Log file: {log_file_path}")
-                print(f"{'=' * 70}\n")
-                suppress_errors = False
-                return len(parse_errors) == 0
-            except Exception as e:
-                log_file.write("✗ PARSING FAILED\n")
-                log_file.write(f"✗ Error: {str(e)}\n\n")
-                log_file.write("=" * 70 + "\n")    
-                print(f"\n{'=' * 70}")
-                print("❌ PARSING FAILED!")
+            else:
+                log_file.write("✓ No syntax errors detected\n\n")
+            
+            # ============ ERRORES SEMÁNTICOS ============
+            if semantic_errors:
+                log_file.write("SEMANTIC ERRORS:\n")
+                log_file.write("-" * 70 + "\n")
+                for err in semantic_errors:
+                    log_file.write(f"✗ {err}\n")
+                log_file.write("\n")
+            else:
+                log_file.write("✓ No semantic errors detected\n\n")
+            
+            # ============ VALIDATED GRAMMAR RULES ============
+            log_file.write("VALIDATED GRAMMAR RULES:\n")
+            log_file.write("-" * 70 + "\n")
+            features_found = []
+            if "package " in source_code:
+                features_found.append("✓ Package declaration")
+            if "import " in source_code:
+                features_found.append("✓ Import statements")
+            if "func " in source_code:
+                features_found.append("✓ Function declarations")
+            if "var " in source_code:
+                features_found.append("✓ Variable declarations")
+            if "const " in source_code:
+                features_found.append("✓ Constant declarations")
+            if ":=" in source_code:
+                features_found.append("✓ Short variable declarations")
+            if "if " in source_code:
+                features_found.append("✓ If statements")
+            if "else" in source_code:
+                features_found.append("✓ Else clauses")
+            if "for " in source_code:
+                features_found.append("✓ For loops")
+            if "break" in source_code:
+                features_found.append("✓ Break statements")
+            if "continue" in source_code:
+                features_found.append("✓ Continue statements")
+            if "switch " in source_code:
+                features_found.append("✓ Switch statements")
+            if "type " in source_code and "struct" in source_code:
+                features_found.append("✓ Struct type declarations")
+            if "[]" in source_code:
+                features_found.append("✓ Slice types")
+            if "[" in source_code and "]" in source_code:
+                features_found.append("✓ Array types")
+            if "++" in source_code or "--" in source_code:
+                features_found.append("✓ Post-increment/decrement")
+            if any(op in source_code for op in ["+", "-", "*", "/", "%"]):
+                features_found.append("✓ Arithmetic expressions")
+            if any(op in source_code for op in ["==", "!=", "<", ">", "<=", ">="]):
+                features_found.append("✓ Relational operators")
+            if any(op in source_code for op in ["&&", "||", "!"]):
+                features_found.append("✓ Logical operators")
+            
+            for feature in features_found:
+                log_file.write(f"{feature}\n")
+            log_file.write("\n")
+            log_file.write("=" * 70 + "\n")
+
+            # ============ CONSOLE OUTPUT ============
+            print(f"\n{'=' * 70}")
+            
+            total_errors = len(syntax_errors) + len(semantic_errors)
+            
+            if total_errors > 0:
+                print("⚠️  PARSING COMPLETED WITH ERRORS")
                 print(f"{'=' * 70}")
-                print(f"Error: {str(e)}")
-                print(f"\n📄 Log file: {log_file_path}")
-                print(f"{'=' * 70}\n")
-                suppress_errors = False
-                return False
+                
+                # Errores sintácticos
+                if syntax_errors:
+                    print(f"\n🔴 SYNTAX ERRORS: {len(syntax_errors)}")
+                    for err in syntax_errors[:3]:
+                        print(f"  ✗ {err}")
+                    if len(syntax_errors) > 3:
+                        print(f"  ... and {len(syntax_errors) - 3} more")
+                else:
+                    print("\n✅ No syntax errors")
+                
+                # Errores semánticos
+                if semantic_errors:
+                    print(f"\n🟠 SEMANTIC ERRORS: {len(semantic_errors)}")
+                    for err in semantic_errors[:3]:
+                        print(f"  ✗ {err}")
+                    if len(semantic_errors) > 3:
+                        print(f"  ... and {len(semantic_errors) - 3} more")
+                else:
+                    print("\n✅ No semantic errors")
+            else:
+                print("✅ PARSING SUCCESSFUL!")
+                print(f"{'=' * 70}")
+                print("✓ No syntax errors")
+                print("✓ No semantic errors")
+            
+            print(f"\nProductions recognized: {len(success_log)}")
+            print(f"Features detected: {len(features_found)}")
+            print(f"\n📄 Log file: {log_file_path}")
+            print(f"{'=' * 70}\n")
+            
+            suppress_errors = False
+            return len(syntax_errors) == 0 and len(semantic_errors) == 0
+            
+        except Exception as e:
+            log_file.write("✗ PARSING FAILED\n")
+            log_file.write(f"✗ Error: {str(e)}\n\n")
+            log_file.write("=" * 70 + "\n")
+            
+            print(f"\n{'=' * 70}")
+            print("❌ PARSING FAILED!")
+            print(f"{'=' * 70}")
+            print(f"Error: {str(e)}")
+            print(f"\n📄 Log file: {log_file_path}")
+            print(f"{'=' * 70}\n")
+            
+            suppress_errors = False
+            return False
 
 def main():
     while True:

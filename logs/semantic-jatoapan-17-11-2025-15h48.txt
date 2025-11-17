@@ -1,0 +1,1696 @@
+======================================================================
+Go Language Parser - Syntax & Semantic Analysis Report
+======================================================================
+File: tests/jatoapan_semantic.go
+User: jatoapan
+Date: 2025-11-17 15:48:09
+======================================================================
+
+SOURCE CODE:
+----------------------------------------------------------------------
+   1 | package main
+   2 | 
+   3 | // José Toapanta's Syntax Validation Algorithm for Go Parser
+   4 | // Tests for lexical and syntactic analysis of Go language subset
+   5 | 
+   6 | // Global variable declarations
+   7 | var globalCounter int = 100
+   8 | var globalTemperature float64 = 36.5
+   9 | var globalName string = "GoProgram"
+  10 | var globalActive bool = true
+  11 | const MAX_VALUE int = 1000
+  12 | const PI float64 = 3.14159
+  13 | 
+  14 | // Multiple return types
+  15 | func calculateBasic() (int, int, int) {
+  16 |     MAX_VALUE = 1
+  17 |     MAX_VALUE++
+  18 |     MAX_VALUE += 30
+  19 |     break
+  20 |     continue
+  21 |     result1 := 10 + 5
+  22 |     result2 := 20 * 2
+  23 |     result3 := 100 - 30
+  24 |     return result1, result2, result3
+  25 | }
+  26 | 
+  27 | // Mixed return types
+  28 | func getInfo() (string, float64, bool) {
+  29 |     text := "Information"
+  30 |     value := 42.5
+  31 |     flag := true
+  32 |     return text, value, flag
+  33 | }
+  34 | 
+  35 | // Basic arithmetic operations
+  36 | func basicArithmetic() {
+  37 |     var a int = 10
+  38 |     var b int = 5
+  39 |     break
+  40 |     continue
+  41 |     sum := a + b
+  42 |     difference := a - b
+  43 |     product := a * b
+  44 |     quotient := a / b
+  45 |     remainder := a % b
+  46 | }
+  47 | 
+  48 | // Multiple arithmetic operators
+  49 | func complexArithmetic() {
+  50 |     var x int = 10
+  51 |     var y int = 5
+  52 |     var z int = 3
+  53 |     
+  54 |     result1 := x + y * z
+  55 |     result2 := x * y + z
+  56 |     result3 := x + y + z
+  57 |     result4 := x - y - z
+  58 |     result5 := x * y * z
+  59 |     result6 := x / y + z
+  60 | }
+  61 | 
+  62 | // Precedence with parentheses
+  63 | func arithmeticWithParentheses() {
+  64 |     var a int = 10
+  65 |     var b int = 5
+  66 |     var c int = 2
+  67 |     
+  68 |     result1 := (a + b) * c
+  69 |     result2 := a * (b + c)
+  70 |     result3 := (a - b) * (c + 1)
+  71 |     result4 := (a + b) / (c + 1)
+  72 | }
+  73 | 
+  74 | // Short assignment
+  75 | func shortAssignment() {
+  76 |     a := 10
+  77 |     b := 20
+  78 |     c := 30
+  79 |     d := 40
+  80 | }
+  81 | 
+  82 | // Compound assignments
+  83 | func compoundAssignment() {
+  84 |     x := 100
+  85 |     x += 50
+  86 |     x -= 20
+  87 |     x *= 2
+  88 |     x /= 5
+  89 |     x %= 3
+  90 | }
+  91 | 
+  92 | // For loop with condition
+  93 | func forLoopCondition() {
+  94 |     counter := 0
+  95 |     for counter < 10 {
+  96 |         counter += 1
+  97 |     }
+  98 | }
+  99 | 
+ 100 | // Classic for loop
+ 101 | func forLoopClassic() {
+ 102 |     for i := 0; i < 10; i++ {
+ 103 |         result := i + 1
+ 104 |     }
+ 105 | }
+ 106 | 
+ 107 | // For loop decrement
+ 108 | func forLoopDecrement() {
+ 109 |     for j := 10; j > 0; j-- {
+ 110 |         product := j * 2
+ 111 |     }
+ 112 | }
+ 113 | 
+ 114 | // For loop custom step
+ 115 | func forLoopCustomIncrement() {
+ 116 |     for k := 0; k < 20; k += 2 {
+ 117 |         squared := k * k
+ 118 |     }
+ 119 | }
+ 120 | 
+ 121 | // Infinite for loop
+ 122 | func forLoopInfinite() {
+ 123 |     x := 0
+ 124 |     for {
+ 125 |         x += 2
+ 126 |         if x > 20 {
+ 127 |             break
+ 128 |         }
+ 129 |     }
+ 130 | }
+ 131 | 
+ 132 | // For with continue
+ 133 | func forLoopContinue() {
+ 134 |     for i := 0; i < 20; i++ {
+ 135 |         if i < 5 {
+ 136 |             continue
+ 137 |         }
+ 138 |         result := i * 2
+ 139 |     }
+ 140 | }
+ 141 | 
+ 142 | // Nested loops
+ 143 | func nestedForLoops() {
+ 144 |     for i := 0; i < 5; i++ {
+ 145 |         for j := 0; j < 5; j++ {
+ 146 |             sum := i + j
+ 147 |         }
+ 148 |     }
+ 149 | }
+ 150 | 
+ 151 | // Nested with operations
+ 152 | func nestedWithArithmetic() {
+ 153 |     for i := 1; i < 4; i++ {
+ 154 |         for j := 1; j < 4; j++ {
+ 155 |             product := i * j
+ 156 |             total := i + j
+ 157 |         }
+ 158 |     }
+ 159 | }
+ 160 | 
+ 161 | // Break in nested loops
+ 162 | func nestedLoopsWithBreak() {
+ 163 |     for i := 0; i < 10; i++ {
+ 164 |         for j := 0; j < 10; j++ {
+ 165 |             if i == 5 && j == 5 {
+ 166 |                 break
+ 167 |             }
+ 168 |             value := i * j
+ 169 |         }
+ 170 |     }
+ 171 | }
+ 172 | 
+ 173 | // Continue in nested loops
+ 174 | func nestedLoopsWithContinue() {
+ 175 |     for i := 0; i < 8; i++ {
+ 176 |         for j := 0; j < 8; j++ {
+ 177 |             if j % 2 == 0 {
+ 178 |                 continue
+ 179 |             }
+ 180 |             result := i + j
+ 181 |         }
+ 182 |     }
+ 183 | }
+ 184 | 
+ 185 | // Break with multiple conditions
+ 186 | func breakWithConditions() {
+ 187 |     counter := 0
+ 188 |     for counter < 100 {
+ 189 |         if counter > 50 && counter < 60 {
+ 190 |             break
+ 191 |         }
+ 192 |         counter += 10
+ 193 |     }
+ 194 | }
+ 195 | 
+ 196 | // Continue with complex logic
+ 197 | func continueWithLogic() {
+ 198 |     for i := 0; i < 30; i++ {
+ 199 |         if i > 5 && i < 10 || i > 20 {
+ 200 |             continue
+ 201 |         }
+ 202 |         value := i * 2
+ 203 |     }
+ 204 | }
+ 205 | 
+ 206 | // Int slice
+ 207 | func sliceInt() {
+ 208 |     numbers := []int{1, 2, 3, 4, 5}
+ 209 |     moreNumbers := []int{10, 20, 30, 40}
+ 210 | }
+ 211 | 
+ 212 | // Float slice
+ 213 | func sliceFloat() {
+ 214 |     temperatures := []float64{36.5, 37.2, 38.1, 39.5}
+ 215 |     values := []float64{1.1, 2.2, 3.3}
+ 216 | }
+ 217 | 
+ 218 | // String slice
+ 219 | func sliceString() {
+ 220 |     names := []string{"Alice", "Bob", "Charlie"}
+ 221 |     cities := []string{"Madrid", "Barcelona"}
+ 222 | }
+ 223 | 
+ 224 | // Bool slice
+ 225 | func sliceBool() {
+ 226 |     statuses := []bool{true, false, true}
+ 227 |     flags := []bool{false, true}
+ 228 | }
+ 229 | 
+ 230 | // Empty slices
+ 231 | func emptySlices() {
+ 232 |     emptyInt := []int{}
+ 233 |     emptyFloat := []float64{}
+ 234 |     emptyString := []string{}
+ 235 |     emptyBool := []bool{}
+ 236 | }
+ 237 | 
+ 238 | // Slice with expressions
+ 239 | func sliceWithExpressions() {
+ 240 |     nums := []int{1 + 2, 5 * 3, 10 - 4}
+ 241 |     floats := []float64{1.5 + 2.5, 3.0 * 2.0}
+ 242 | }
+ 243 | 
+ 244 | // Multiple slices
+ 245 | func multipleSlices() {
+ 246 |     intSlice := []int{1, 2, 3, 4, 5}
+ 247 |     floatSlice := []float64{1.1, 2.2, 3.3}
+ 248 |     stringSlice := []string{"one", "two", "three"}
+ 249 |     boolSlice := []bool{true, false}
+ 250 | }
+ 251 | 
+ 252 | // AND operator
+ 253 | func logicalAND() {
+ 254 |     a := 10
+ 255 |     b := 20
+ 256 |     result := a > 5 && b < 30
+ 257 |     condition := a != 0 && b != 0
+ 258 | }
+ 259 | 
+ 260 | // OR operator
+ 261 | func logicalOR() {
+ 262 |     x := 5
+ 263 |     y := 15
+ 264 |     condition1 := x < 0 || y > 10
+ 265 |     condition2 := x == 5 || y == 15
+ 266 | }
+ 267 | 
+ 268 | // NOT operator
+ 269 | func logicalNOT() {
+ 270 |     flag := true
+ 271 |     negFlag := !flag
+ 272 |     condition := !false
+ 273 | }
+ 274 | 
+ 275 | // Complex logical expressions
+ 276 | func complexLogical() {
+ 277 |     a := 10
+ 278 |     b := 20
+ 279 |     c := 30
+ 280 |     result1 := a > 5 && b < 30 && c > 25
+ 281 |     result2 := a == 10 || b == 15 || c == 30
+ 282 |     result3 := !(a < 5) && (b > 15)
+ 283 | }
+ 284 | 
+ 285 | // Relational operators
+ 286 | func relationalOps() {
+ 287 |     x := 10
+ 288 |     y := 20
+ 289 |     eq := x == y
+ 290 |     neq := x != y
+ 291 |     lt := x < y
+ 292 |     le := x <= y
+ 293 |     gt := x > y
+ 294 |     ge := x >= y
+ 295 | }
+ 296 | 
+ 297 | // Post increment
+ 298 | func postIncrement() {
+ 299 |     i := 0
+ 300 |     i++
+ 301 |     j := 5
+ 302 |     j++
+ 303 | }
+ 304 | 
+ 305 | // Post decrement
+ 306 | func postDecrement() {
+ 307 |     i := 10
+ 308 |     i--
+ 309 |     j := 5
+ 310 |     j--
+ 311 | }
+ 312 | 
+ 313 | // For with post operators
+ 314 | func forLoopWithPostOp() {
+ 315 |     for i := 0; i < 10; i++ {
+ 316 |         x := i + 1
+ 317 |     }
+ 318 |     
+ 319 |     for j := 10; j > 0; j-- {
+ 320 |         y := j * 2
+ 321 |     }
+ 322 | }
+ 323 | 
+ 324 | // Four return types
+ 325 | func multiReturn() (int, float64, string, bool) {
+ 326 |     intVal := 42
+ 327 |     floatVal := 3.14
+ 328 |     stringVal := "test"
+ 329 |     boolVal := true
+ 330 |     return intVal, floatVal, stringVal, boolVal
+ 331 | }
+ 332 | 
+ 333 | // Arithmetic in loop
+ 334 | func arithmeticInLoop() {
+ 335 |     for i := 1; i < 6; i++ {
+ 336 |         result := i * 2 + 5
+ 337 |         expr := (i + 2) * (i - 1)
+ 338 |     }
+ 339 | }
+ 340 | 
+ 341 | // Global and local variables
+ 342 | func globalLocalTest() {
+ 343 |     localCounter := 50
+ 344 |     localTemp := 25.5
+ 345 |     
+ 346 |     total := globalCounter + localCounter
+ 347 |     tempDiff := globalTemperature + localTemp
+ 348 | }
+ 349 | 
+ 350 | // Comprehensive validation
+ 351 | func comprehensiveTest() {
+ 352 |     var initial int = 100
+ 353 |     var rate float64 = 0.05
+ 354 |     var description string = "Process"
+ 355 |     var running bool = true
+ 356 |     
+ 357 |     for year := 0; year < 10; year++ {
+ 358 |         initial += 10
+ 359 |         rate += 0.01
+ 360 |     }
+ 361 |     
+ 362 |     for month := 0; month < 12; month++ {
+ 363 |         monthValue := initial * 2
+ 364 |         monthRate := rate * 100.0
+ 365 |     }
+ 366 |     
+ 367 |     numbers := []int{1, 2, 3, 4, 5}
+ 368 |     temps := []float64{20.5, 21.3, 22.1}
+ 369 |     codes := []string{"A", "B", "C"}
+ 370 | }
+ 371 | 
+ 372 | // Break and continue mixed
+ 373 | func breakContinueMixed() {
+ 374 |     counter := 0
+ 375 |     for counter < 50 {
+ 376 |         if counter % 2 == 0 {
+ 377 |             counter += 1
+ 378 |             continue
+ 379 |         }
+ 380 |         
+ 381 |         if counter > 30 {
+ 382 |             break
+ 383 |         }
+ 384 |         
+ 385 |         value := counter * 3
+ 386 |         counter += 1
+ 387 |     }
+ 388 | }
+ 389 | 
+ 390 | // Multiple breaks and continues
+ 391 | func multipleBreaKsContinues() {
+ 392 |     for i := 0; i < 15; i++ {
+ 393 |         if i == 3 {
+ 394 |             continue
+ 395 |         }
+ 396 |         
+ 397 |         if i == 7 {
+ 398 |             continue
+ 399 |         }
+ 400 |         
+ 401 |         if i == 12 {
+ 402 |             break
+ 403 |         }
+ 404 |         
+ 405 |         sum := i + 5
+ 406 |     }
+ 407 | }
+ 408 | 
+ 409 | // Main entry point
+ 410 | func main() {
+ 411 |     var x int = 1000
+ 412 |     var y float64 = 0.05
+ 413 |     var label string = "Start"
+ 414 |     var active bool = true
+ 415 |     
+ 416 |     for i := 0; i < 10; i++ {
+ 417 |         x += 50
+ 418 |         y += 0.01
+ 419 |     }
+ 420 |     
+ 421 |     data := []int{10, 20, 30, 40, 50}
+ 422 |     values := []float64{1.5, 2.5, 3.5}
+ 423 |     break
+ 424 |     for j := 0; j < 15; j++ {
+ 425 |         if j == 5 {
+ 426 |             break
+ 427 |         }
+ 428 |         
+ 429 |         if j % 2 == 0 {
+ 430 |             continue
+ 431 |         }
+ 432 |         
+ 433 |         result := j * 2
+ 434 |     }
+ 435 | }
+----------------------------------------------------------------------
+
+PRODUCTIONS RECOGNIZED:
+----------------------------------------------------------------------
+✔ package_declaration
+✔ import
+✔ primitive_type
+✔ type
+✔ expression
+✔ global_var_dec
+✔ global_statement
+✔ global_statement_list
+✔ primitive_type
+✔ type
+✔ expression
+✔ global_var_dec
+✔ global_statement
+✔ global_statement_list
+✔ primitive_type
+✔ type
+✔ expression
+✔ global_var_dec
+✔ global_statement
+✔ global_statement_list
+✔ primitive_type
+✔ type
+✔ expression
+✔ global_var_dec
+✔ global_statement
+✔ global_statement_list
+✔ primitive_type
+✔ type
+✔ expression
+✔ global_const_dec
+✔ global_statement
+✔ global_statement_list
+✔ primitive_type
+✔ type
+✔ expression
+✔ global_const_dec
+✔ global_statement
+✔ global_statement_list
+✔ parameter_list
+✔ primitive_type
+✔ type
+✔ type_list
+✔ primitive_type
+✔ type
+✔ type_list
+✔ primitive_type
+✔ type
+✔ type_list
+✔ return_type
+✔ expression
+✔ expression_postfix
+✔ operator_assign
+✔ expression
+✔ assignment_compound
+✔ break_statement
+✔ continue_statement
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ return_list
+✔ expression
+✔ return_list
+✔ expression
+✔ return_list
+✔ return_statement
+✔ function_declaration
+✔ global_statement
+✔ global_statement_list
+✔ parameter_list
+✔ primitive_type
+✔ type
+✔ type_list
+✔ primitive_type
+✔ type
+✔ type_list
+✔ primitive_type
+✔ type
+✔ type_list
+✔ return_type
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ return_list
+✔ expression
+✔ return_list
+✔ expression
+✔ return_list
+✔ return_statement
+✔ function_declaration
+✔ global_statement
+✔ global_statement_list
+✔ parameter_list
+✔ return_type
+✔ primitive_type
+✔ type
+✔ expression
+✔ primitive_type
+✔ type
+✔ expression
+✔ break_statement
+✔ continue_statement
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ function_declaration
+✔ global_statement
+✔ global_statement_list
+✔ parameter_list
+✔ return_type
+✔ primitive_type
+✔ type
+✔ expression
+✔ primitive_type
+✔ type
+✔ expression
+✔ primitive_type
+✔ type
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ function_declaration
+✔ global_statement
+✔ global_statement_list
+✔ parameter_list
+✔ return_type
+✔ primitive_type
+✔ type
+✔ expression
+✔ primitive_type
+✔ type
+✔ expression
+✔ primitive_type
+✔ type
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression_group
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression_group
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression_group
+✔ expression
+✔ expression
+✔ expression
+✔ expression_group
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression_group
+✔ expression
+✔ expression
+✔ expression
+✔ expression_group
+✔ expression
+✔ function_declaration
+✔ global_statement
+✔ global_statement_list
+✔ parameter_list
+✔ return_type
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ function_declaration
+✔ global_statement
+✔ global_statement_list
+✔ parameter_list
+✔ return_type
+✔ expression
+✔ operator_assign
+✔ expression
+✔ assignment_compound
+✔ operator_assign
+✔ expression
+✔ assignment_compound
+✔ operator_assign
+✔ expression
+✔ assignment_compound
+✔ operator_assign
+✔ expression
+✔ assignment_compound
+✔ operator_assign
+✔ expression
+✔ assignment_compound
+✔ function_declaration
+✔ global_statement
+✔ global_statement_list
+✔ parameter_list
+✔ return_type
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ operator_assign
+✔ expression
+✔ assignment_compound
+✔ for_condition
+✔ for_statement
+✔ function_declaration
+✔ global_statement
+✔ global_statement_list
+✔ parameter_list
+✔ return_type
+✔ expression
+✔ short_assignment
+✔ for_init
+✔ expression
+✔ expression
+✔ expression
+✔ for_cond
+✔ expression_postfix
+✔ for_post
+✔ expression
+✔ expression
+✔ expression
+✔ for_classic
+✔ for_statement
+✔ function_declaration
+✔ global_statement
+✔ global_statement_list
+✔ parameter_list
+✔ return_type
+✔ expression
+✔ short_assignment
+✔ for_init
+✔ expression
+✔ expression
+✔ expression
+✔ for_cond
+✔ expression_postfix
+✔ for_post
+✔ expression
+✔ expression
+✔ expression
+✔ for_classic
+✔ for_statement
+✔ function_declaration
+✔ global_statement
+✔ global_statement_list
+✔ parameter_list
+✔ return_type
+✔ expression
+✔ short_assignment
+✔ for_init
+✔ expression
+✔ expression
+✔ expression
+✔ for_cond
+✔ operator_assign
+✔ expression
+✔ assignment_compound
+✔ for_post
+✔ expression
+✔ expression
+✔ expression
+✔ for_classic
+✔ for_statement
+✔ function_declaration
+✔ global_statement
+✔ global_statement_list
+✔ parameter_list
+✔ return_type
+✔ expression
+✔ operator_assign
+✔ expression
+✔ assignment_compound
+✔ expression
+✔ expression
+✔ expression
+✔ break_statement
+✔ if_statement
+✔ for_infinite
+✔ for_statement
+✔ function_declaration
+✔ global_statement
+✔ global_statement_list
+✔ parameter_list
+✔ return_type
+✔ expression
+✔ short_assignment
+✔ for_init
+✔ expression
+✔ expression
+✔ expression
+✔ for_cond
+✔ expression_postfix
+✔ for_post
+✔ expression
+✔ expression
+✔ expression
+✔ continue_statement
+✔ if_statement
+✔ expression
+✔ expression
+✔ expression
+✔ for_classic
+✔ for_statement
+✔ function_declaration
+✔ global_statement
+✔ global_statement_list
+✔ parameter_list
+✔ return_type
+✔ expression
+✔ short_assignment
+✔ for_init
+✔ expression
+✔ expression
+✔ expression
+✔ for_cond
+✔ expression_postfix
+✔ for_post
+✔ expression
+✔ short_assignment
+✔ for_init
+✔ expression
+✔ expression
+✔ expression
+✔ for_cond
+✔ expression_postfix
+✔ for_post
+✔ expression
+✔ expression
+✔ expression
+✔ for_classic
+✔ for_statement
+✔ for_classic
+✔ for_statement
+✔ function_declaration
+✔ global_statement
+✔ global_statement_list
+✔ parameter_list
+✔ return_type
+✔ expression
+✔ short_assignment
+✔ for_init
+✔ expression
+✔ expression
+✔ expression
+✔ for_cond
+✔ expression_postfix
+✔ for_post
+✔ expression
+✔ short_assignment
+✔ for_init
+✔ expression
+✔ expression
+✔ expression
+✔ for_cond
+✔ expression_postfix
+✔ for_post
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ for_classic
+✔ for_statement
+✔ for_classic
+✔ for_statement
+✔ function_declaration
+✔ global_statement
+✔ global_statement_list
+✔ parameter_list
+✔ return_type
+✔ expression
+✔ short_assignment
+✔ for_init
+✔ expression
+✔ expression
+✔ expression
+✔ for_cond
+✔ expression_postfix
+✔ for_post
+✔ expression
+✔ short_assignment
+✔ for_init
+✔ expression
+✔ expression
+✔ expression
+✔ for_cond
+✔ expression_postfix
+✔ for_post
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ break_statement
+✔ if_statement
+✔ expression
+✔ expression
+✔ expression
+✔ for_classic
+✔ for_statement
+✔ for_classic
+✔ for_statement
+✔ function_declaration
+✔ global_statement
+✔ global_statement_list
+✔ parameter_list
+✔ return_type
+✔ expression
+✔ short_assignment
+✔ for_init
+✔ expression
+✔ expression
+✔ expression
+✔ for_cond
+✔ expression_postfix
+✔ for_post
+✔ expression
+✔ short_assignment
+✔ for_init
+✔ expression
+✔ expression
+✔ expression
+✔ for_cond
+✔ expression_postfix
+✔ for_post
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ continue_statement
+✔ if_statement
+✔ expression
+✔ expression
+✔ expression
+✔ for_classic
+✔ for_statement
+✔ for_classic
+✔ for_statement
+✔ function_declaration
+✔ global_statement
+✔ global_statement_list
+✔ parameter_list
+✔ return_type
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ break_statement
+✔ if_statement
+✔ operator_assign
+✔ expression
+✔ assignment_compound
+✔ for_condition
+✔ for_statement
+✔ function_declaration
+✔ global_statement
+✔ global_statement_list
+✔ parameter_list
+✔ return_type
+✔ expression
+✔ short_assignment
+✔ for_init
+✔ expression
+✔ expression
+✔ expression
+✔ for_cond
+✔ expression_postfix
+✔ for_post
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ continue_statement
+✔ if_statement
+✔ expression
+✔ expression
+✔ expression
+✔ for_classic
+✔ for_statement
+✔ function_declaration
+✔ global_statement
+✔ global_statement_list
+✔ parameter_list
+✔ return_type
+✔ primitive_type
+✔ slice_type
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression_slice
+✔ primitive_type
+✔ slice_type
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression_slice
+✔ function_declaration
+✔ global_statement
+✔ global_statement_list
+✔ parameter_list
+✔ return_type
+✔ primitive_type
+✔ slice_type
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression_slice
+✔ primitive_type
+✔ slice_type
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression_slice
+✔ function_declaration
+✔ global_statement
+✔ global_statement_list
+✔ parameter_list
+✔ return_type
+✔ primitive_type
+✔ slice_type
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression_slice
+✔ primitive_type
+✔ slice_type
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression_slice
+✔ function_declaration
+✔ global_statement
+✔ global_statement_list
+✔ parameter_list
+✔ return_type
+✔ primitive_type
+✔ slice_type
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression_slice
+✔ primitive_type
+✔ slice_type
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression_slice
+✔ function_declaration
+✔ global_statement
+✔ global_statement_list
+✔ parameter_list
+✔ return_type
+✔ primitive_type
+✔ slice_type
+✔ expression_slice
+✔ primitive_type
+✔ slice_type
+✔ expression_slice
+✔ primitive_type
+✔ slice_type
+✔ expression_slice
+✔ primitive_type
+✔ slice_type
+✔ expression_slice
+✔ function_declaration
+✔ global_statement
+✔ global_statement_list
+✔ parameter_list
+✔ return_type
+✔ primitive_type
+✔ slice_type
+✔ expression
+✔ expression
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression
+✔ expression
+✔ expression_list
+✔ expression_slice
+✔ primitive_type
+✔ slice_type
+✔ expression
+✔ expression
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression
+✔ expression
+✔ expression_list
+✔ expression_slice
+✔ function_declaration
+✔ global_statement
+✔ global_statement_list
+✔ parameter_list
+✔ return_type
+✔ primitive_type
+✔ slice_type
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression_slice
+✔ primitive_type
+✔ slice_type
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression_slice
+✔ primitive_type
+✔ slice_type
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression_slice
+✔ primitive_type
+✔ slice_type
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression_slice
+✔ function_declaration
+✔ global_statement
+✔ global_statement_list
+✔ parameter_list
+✔ return_type
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ function_declaration
+✔ global_statement
+✔ global_statement_list
+✔ parameter_list
+✔ return_type
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ function_declaration
+✔ global_statement
+✔ global_statement_list
+✔ parameter_list
+✔ return_type
+✔ expression
+✔ expression
+✔ expression_unary
+✔ expression
+✔ expression_unary
+✔ function_declaration
+✔ global_statement
+✔ global_statement_list
+✔ parameter_list
+✔ return_type
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression_group
+✔ expression
+✔ expression
+✔ expression
+✔ expression_group
+✔ expression
+✔ expression_unary
+✔ function_declaration
+✔ global_statement
+✔ global_statement_list
+✔ parameter_list
+✔ return_type
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ function_declaration
+✔ global_statement
+✔ global_statement_list
+✔ parameter_list
+✔ return_type
+✔ expression
+✔ expression_postfix
+✔ expression
+✔ expression_postfix
+✔ function_declaration
+✔ global_statement
+✔ global_statement_list
+✔ parameter_list
+✔ return_type
+✔ expression
+✔ expression_postfix
+✔ expression
+✔ expression_postfix
+✔ function_declaration
+✔ global_statement
+✔ global_statement_list
+✔ parameter_list
+✔ return_type
+✔ expression
+✔ short_assignment
+✔ for_init
+✔ expression
+✔ expression
+✔ expression
+✔ for_cond
+✔ expression_postfix
+✔ for_post
+✔ expression
+✔ expression
+✔ expression
+✔ for_classic
+✔ for_statement
+✔ expression
+✔ short_assignment
+✔ for_init
+✔ expression
+✔ expression
+✔ expression
+✔ for_cond
+✔ expression_postfix
+✔ for_post
+✔ expression
+✔ expression
+✔ expression
+✔ for_classic
+✔ for_statement
+✔ function_declaration
+✔ global_statement
+✔ global_statement_list
+✔ parameter_list
+✔ primitive_type
+✔ type
+✔ type_list
+✔ primitive_type
+✔ type
+✔ type_list
+✔ primitive_type
+✔ type
+✔ type_list
+✔ primitive_type
+✔ type
+✔ type_list
+✔ return_type
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ return_list
+✔ expression
+✔ return_list
+✔ expression
+✔ return_list
+✔ expression
+✔ return_list
+✔ return_statement
+✔ function_declaration
+✔ global_statement
+✔ global_statement_list
+✔ parameter_list
+✔ return_type
+✔ expression
+✔ short_assignment
+✔ for_init
+✔ expression
+✔ expression
+✔ expression
+✔ for_cond
+✔ expression_postfix
+✔ for_post
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression_group
+✔ expression
+✔ expression
+✔ expression
+✔ expression_group
+✔ expression
+✔ for_classic
+✔ for_statement
+✔ function_declaration
+✔ global_statement
+✔ global_statement_list
+✔ parameter_list
+✔ return_type
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ function_declaration
+✔ global_statement
+✔ global_statement_list
+✔ parameter_list
+✔ return_type
+✔ primitive_type
+✔ type
+✔ expression
+✔ primitive_type
+✔ type
+✔ expression
+✔ primitive_type
+✔ type
+✔ expression
+✔ primitive_type
+✔ type
+✔ expression
+✔ expression
+✔ short_assignment
+✔ for_init
+✔ expression
+✔ expression
+✔ expression
+✔ for_cond
+✔ expression_postfix
+✔ for_post
+✔ operator_assign
+✔ expression
+✔ assignment_compound
+✔ operator_assign
+✔ expression
+✔ assignment_compound
+✔ for_classic
+✔ for_statement
+✔ expression
+✔ short_assignment
+✔ for_init
+✔ expression
+✔ expression
+✔ expression
+✔ for_cond
+✔ expression_postfix
+✔ for_post
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ for_classic
+✔ for_statement
+✔ primitive_type
+✔ slice_type
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression_slice
+✔ primitive_type
+✔ slice_type
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression_slice
+✔ primitive_type
+✔ slice_type
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression_slice
+✔ function_declaration
+✔ global_statement
+✔ global_statement_list
+✔ parameter_list
+✔ return_type
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ operator_assign
+✔ expression
+✔ assignment_compound
+✔ continue_statement
+✔ if_statement
+✔ expression
+✔ expression
+✔ expression
+✔ break_statement
+✔ if_statement
+✔ expression
+✔ expression
+✔ expression
+✔ operator_assign
+✔ expression
+✔ assignment_compound
+✔ for_condition
+✔ for_statement
+✔ function_declaration
+✔ global_statement
+✔ global_statement_list
+✔ parameter_list
+✔ return_type
+✔ expression
+✔ short_assignment
+✔ for_init
+✔ expression
+✔ expression
+✔ expression
+✔ for_cond
+✔ expression_postfix
+✔ for_post
+✔ expression
+✔ expression
+✔ expression
+✔ continue_statement
+✔ if_statement
+✔ expression
+✔ expression
+✔ expression
+✔ continue_statement
+✔ if_statement
+✔ expression
+✔ expression
+✔ expression
+✔ break_statement
+✔ if_statement
+✔ expression
+✔ expression
+✔ expression
+✔ for_classic
+✔ for_statement
+✔ function_declaration
+✔ global_statement
+✔ global_statement_list
+✔ parameter_list
+✔ return_type
+✔ primitive_type
+✔ type
+✔ expression
+✔ primitive_type
+✔ type
+✔ expression
+✔ primitive_type
+✔ type
+✔ expression
+✔ primitive_type
+✔ type
+✔ expression
+✔ expression
+✔ short_assignment
+✔ for_init
+✔ expression
+✔ expression
+✔ expression
+✔ for_cond
+✔ expression_postfix
+✔ for_post
+✔ operator_assign
+✔ expression
+✔ assignment_compound
+✔ operator_assign
+✔ expression
+✔ assignment_compound
+✔ for_classic
+✔ for_statement
+✔ primitive_type
+✔ slice_type
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression_slice
+✔ primitive_type
+✔ slice_type
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression_slice
+✔ break_statement
+✔ expression
+✔ short_assignment
+✔ for_init
+✔ expression
+✔ expression
+✔ expression
+✔ for_cond
+✔ expression_postfix
+✔ for_post
+✔ expression
+✔ expression
+✔ expression
+✔ break_statement
+✔ if_statement
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ continue_statement
+✔ if_statement
+✔ expression
+✔ expression
+✔ expression
+✔ for_classic
+✔ for_statement
+✔ function_declaration
+✔ global_statement
+✔ global_statement_list
+✔ program
+
+✓ No syntax errors detected
+
+SEMANTIC ERRORS:
+----------------------------------------------------------------------
+✗ Error semántico: La constante 'MAX_VALUE' no puede ser modificada
+✗ Error semántico: La constante 'MAX_VALUE' ya fue declarada previamente.
+✗ Error semántico: La constante 'MAX_VALUE' no puede ser modificada
+✗ Error semántico: 'break' solo puede usarse dentro de un loop
+✗ Error semántico: 'continue' solo puede usarse dentro de un loop
+✗ Error semántico: 'break' solo puede usarse dentro de un loop
+✗ Error semántico: 'continue' solo puede usarse dentro de un loop
+✗ Error Semantico: Variable globalCounter no se encuentra definida.
+✗ Error Semantico: Variable globalTemperature no se encuentra definida.
+✗ Error semántico: 'break' solo puede usarse dentro de un loop
+
+VALIDATED GRAMMAR RULES:
+----------------------------------------------------------------------
+✓ Package declaration
+✓ Function declarations
+✓ Variable declarations
+✓ Constant declarations
+✓ Short variable declarations
+✓ If statements
+✓ For loops
+✓ Break statements
+✓ Continue statements
+✓ Slice types
+✓ Array types
+✓ Post-increment/decrement
+✓ Arithmetic expressions
+✓ Relational operators
+✓ Logical operators
+
+======================================================================

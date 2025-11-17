@@ -14,6 +14,7 @@ func calculate(a int, b int) int {   // FUNC, IDENTIFIER, INT_TYPE
 }
 
 func main() {
+    age = 2 + 1
     age++                            // PLUSPLUS
     age--                            // MINUSMINUS
     isActive = false                 // ASSIGN, FALSE
