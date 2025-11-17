@@ -1,0 +1,72 @@
+======================================================================
+Go Language Semantic Analyzer - Error Report
+======================================================================
+File: tests/jfco_semantic_test.go
+User: jfco
+Date: 2025-11-17 17:01:58
+======================================================================
+
+SOURCE CODE:
+----------------------------------------------------------------------
+   1 | package main
+   2 | 
+   3 | import "fmt"
+   4 | 
+   5 | // Test 1: Function redeclaration (should trigger error)
+   6 | func calculate() int {
+   7 |     return 42
+   8 | }
+   9 | 
+  10 | func calculate() int {
+  11 |     return 100
+  12 | }
+  13 | 
+  14 | // Test 2: Variable redeclaration in same scope (should trigger error)
+  15 | var globalX int = 10
+  16 | var globalX int = 20
+  17 | 
+  18 | func main() {
+  19 |     // Test 3: Local variable redeclaration (should trigger error)
+  20 |     var localY int = 5
+  21 |     var localY int = 10
+  22 | 
+  23 |     // Test 4: This is fine - shadowing in nested scope
+  24 |     var z int = 1
+  25 |     if true {
+  26 |         var z int = 2
+  27 |         fmt.Println(z)
+  28 |     }
+  29 | 
+  30 |     fmt.Println(localY)
+  31 |     fmt.Println(globalX)
+  32 |     fmt.Println(z)
+  33 | }
+  34 | 
+----------------------------------------------------------------------
+
+SEMANTIC ANALYSIS RESULTS:
+----------------------------------------------------------------------
+
+Total Semantic Errors: 7
+
+  1. Error semántico: La función 'calculate' ya fue declarada previamente.
+  2. Error semántico: La variable 'globalX' ya fue declarada en este ámbito.
+  3. Error semántico: La variable 'localY' ya fue declarada en este ámbito.
+  4. Error Semantico: Llamada a funcion de impresion invalida 'fmt..'.
+  5. Error Semantico: Llamada a funcion de impresion invalida 'fmt..'.
+  6. Error Semantico: Llamada a funcion de impresion invalida 'fmt..'.
+  7. Error Semantico: Llamada a funcion de impresion invalida 'fmt..'.
+
+SEMANTIC RULES CHECKED:
+----------------------------------------------------------------------
+  • Constant immutability check
+  • Constant duplicate declaration
+  • Variable scope checking (undefined variables)
+  • Break/continue loop context validation
+  • Switch case type consistency
+  • Multiple default clause detection
+  • Function redeclaration detection
+  • Variable redeclaration in same scope
+
+Total rules applied: 8
+======================================================================

@@ -878,23 +878,42 @@ def p_argument_list(p):
 # END Contribution: Nicolas Fiallo
 
 # START Contribution: Juan Fernandez
-# Semantic Rule 1: Function Redeclaration Detection
+#
+# --- Semantic Rule 1: Function Redeclaration Detection ---
 # Detects when a function with the same name is declared multiple times in the global scope.
-# Implementation: Modified p_function_declaration (line ~283) to track function names in context_stack[0]["functions"]
-# and report error if function name already exists.
+# Implementation: Modified p_function_declaration (line ~360) to track function names in
+# context_stack[0]["functions"] and report error if function name already exists.
 # Error message: "Error semántico: La función '{name}' ya fue declarada previamente."
 #
-# Semantic Rule 2: Variable Redeclaration in Same Scope Detection
-# Detects when a variable is declared multiple times within the same scope (not shadowing in nested scopes).
+# --- Semantic Rule 2: Variable Redeclaration in Same Scope Detection ---
+# Detects when a variable is declared multiple times within the same scope (not shadowing).
 # Implementation locations:
-#   - p_global_var_dec (line ~100): Global variable redeclaration check
-#   - p_local_var_dec (line ~132): Local variable redeclaration check
-#   - p_variable_declaration (line ~354): Statement-level variable redeclaration check
+#   - p_global_var_dec (line ~114): Global variable redeclaration check
+#   - p_local_var_dec (line ~152): Local variable redeclaration check
+#   - p_variable_declaration (line ~420): Statement-level variable redeclaration check
 # Error message: "Error semántico: La variable '{name}' ya fue declarada en este ámbito."
 #
 # Both rules follow the SDT (Syntax-Directed Translation) pattern used throughout this parser,
 # where semantic checks are embedded directly in grammar rule actions.
 # Errors are collected in semantic_errors[] and written to logs/semantic-{user}-{date}-{time}.txt
+#
+# --- context_stack["functions"] ---
+# Added "functions": {} to context_stack (line ~24) to track declared function names
+# and prevent redeclaration at the global scope level.
+#
+# --- get_semantic_summary() ---
+# Returns a dictionary summarizing all 8 semantic rules implemented in the parser.
+# Useful for documentation and reporting purposes.
+#
+# --- run_semantic() (line ~1106) ---
+# Dedicated semantic analysis function that focuses only on semantic errors.
+# Features:
+#   - Clean console output with numbered error list
+#   - Semantic rules summary display
+#   - Generates reports to logs/semantic-{user}-{date}-{time}.txt
+#   - Called via: python run_semantic.py tests/<file.go> <username>
+#
+# =============================================================================
 
 
 def get_semantic_summary():
@@ -914,7 +933,7 @@ def get_semantic_summary():
     }
 
 
-# END Contribution: Juan Fernandez
+# END Contribution: Juan Fernandez (Semantic Rules)
 
 
 def p_error(p):
@@ -1103,6 +1122,130 @@ def run_parser(file_path, github_user):
             return False
 
 
+# START Contribution: Juan Fernandez
+#
+# This function provides a focused semantic analysis mode that:
+#   - Runs the parser silently (suppresses production logs on console)
+#   - Displays only semantic errors in a clean, numbered format
+#   - Shows a summary of all 8 semantic rules being checked
+#   - Generates a detailed report to logs/semantic-{user}-{date}-{time}.txt
+#
+# Usage: python run_semantic.py tests/<file.go> <username>
+#
+# Output includes:
+#   - Source code with line numbers
+#   - Enumerated list of all semantic errors
+#   - List of semantic rules applied
+#   - Total error count and rules summary
+# =============================================================================
+
+
+def run_semantic(file_path, github_user):
+    """
+    Run semantic analysis focused only on semantic errors.
+    Outputs to logs/semantic-{user}-{date}-{time}.txt
+    """
+    global syntax_errors, semantic_errors, suppress_errors, success_log, context_stack
+    syntax_errors = []
+    semantic_errors = []
+    success_log = []
+    suppress_errors = True
+    context_stack = [{"consts": {}, "variables": {}, "functions": {}}]
+
+    with open(file_path, "r", encoding="utf-8") as file:
+        source_code = file.read()
+
+    user_id = github_user.lower().replace(" ", "")
+    now = datetime.now().strftime("%d-%m-%Y-%Hh%M")
+    log_file_path = f"./logs/semantic-{user_id}-{now}.txt"
+    os.makedirs("./logs", exist_ok=True)
+
+    with open(log_file_path, "w", encoding="utf-8") as log_file:
+        # ============ HEADER ============
+        log_file.write("=" * 70 + "\n")
+        log_file.write("Go Language Semantic Analyzer - Error Report\n")
+        log_file.write("=" * 70 + "\n")
+        log_file.write(f"File: {file_path}\n")
+        log_file.write(f"User: {github_user}\n")
+        log_file.write(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+        log_file.write("=" * 70 + "\n\n")
+
+        # ============ SOURCE CODE ============
+        log_file.write("SOURCE CODE:\n")
+        log_file.write("-" * 70 + "\n")
+        for i, line in enumerate(source_code.split("\n"), 1):
+            log_file.write(f"{i:4d} | {line}\n")
+        log_file.write("-" * 70 + "\n\n")
+
+        try:
+            # ============ PARSING (silent for syntax) ============
+            result = parser.parse(source_code, lexer=lexer, debug=False)
+
+            # ============ SEMANTIC ERRORS ============
+            log_file.write("SEMANTIC ANALYSIS RESULTS:\n")
+            log_file.write("-" * 70 + "\n\n")
+
+            if semantic_errors:
+                log_file.write(f"Total Semantic Errors: {len(semantic_errors)}\n\n")
+                for i, err in enumerate(semantic_errors, 1):
+                    log_file.write(f"{i:3d}. {err}\n")
+                log_file.write("\n")
+            else:
+                log_file.write("✓ No semantic errors detected\n\n")
+
+            # ============ SEMANTIC RULES SUMMARY ============
+            log_file.write("SEMANTIC RULES CHECKED:\n")
+            log_file.write("-" * 70 + "\n")
+            summary = get_semantic_summary()
+            for rule in summary["rules"]:
+                log_file.write(f"  • {rule}\n")
+            log_file.write(f"\nTotal rules applied: {summary['total_rules']}\n")
+            log_file.write("=" * 70 + "\n")
+
+            # ============ CONSOLE OUTPUT ============
+            print(f"\n{'=' * 70}")
+            print("GO SEMANTIC ANALYZER")
+            print(f"{'=' * 70}")
+            print(f"File: {file_path}")
+            print(f"User: {github_user}")
+            print(f"{'=' * 70}")
+
+            if semantic_errors:
+                print(f"\n🔴 SEMANTIC ERRORS FOUND: {len(semantic_errors)}\n")
+                for i, err in enumerate(semantic_errors, 1):
+                    print(f"  {i}. {err}")
+                print()
+            else:
+                print("\n✅ NO SEMANTIC ERRORS\n")
+                print("All semantic checks passed successfully.")
+                print()
+
+            print(f"Semantic rules checked: {summary['total_rules']}")
+            print(f"\n📄 Report: {log_file_path}")
+            print(f"{'=' * 70}\n")
+
+            suppress_errors = False
+            return len(semantic_errors) == 0
+
+        except Exception as e:
+            log_file.write("✗ SEMANTIC ANALYSIS FAILED\n")
+            log_file.write(f"✗ Error: {str(e)}\n\n")
+            log_file.write("=" * 70 + "\n")
+
+            print(f"\n{'=' * 70}")
+            print("❌ SEMANTIC ANALYSIS FAILED!")
+            print(f"{'=' * 70}")
+            print(f"Error: {str(e)}")
+            print(f"\n📄 Report: {log_file_path}")
+            print(f"{'=' * 70}\n")
+
+            suppress_errors = False
+            return False
+
+
+# END Contribution: Juan Fernandez
+
+
 def main():
     while True:
         try:
@@ -1116,4 +1259,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
