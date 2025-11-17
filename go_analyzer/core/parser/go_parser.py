@@ -17,10 +17,16 @@ parse_errors = []
 success_log = []
 suppress_errors = False
 
+context_stack = [{
+    "variables": {},
+}]
+
 def log_info(msg):
     """Registra información de producciones reconocidas"""
     print(f"✔ {msg}")
     success_log.append(f"✔ {msg}")
+
+
 
 def p_program(p):
     """program : package_declaration import global_statement_list"""
@@ -56,6 +62,35 @@ def p_global_statement(p):
     | method_declaration
     | type_declaration"""
     log_info("global_statement")
+
+def p_block(p):
+    """block : LBRACE enter_block exit_block RBRACE
+    | LBRACE enter_block statement_list  exit_block RBRACE"""
+
+
+def p_statement_list(p):
+    """statement_list : statement
+    | statement_list optional_semicolon statement"""
+    if len(p) == 4:
+        p[0] = p[1] + [p[3]]
+    elif len(p) == 2:
+        p[0] = [p[1]]
+
+
+def p_statement(p):
+    """statement : assignment
+    | assignment_compound
+    | variable_declaration
+    | expression
+    | return_statement
+    | for_statement
+    | if_statement
+    | switch_statement
+    | break_statement
+    | continue_statement
+    | fallthrough_statement"""
+    p[0] = p[1]
+
 
 def p_global_var_dec(p):
     """global_var_dec : VAR IDENTIFIER type
@@ -182,20 +217,24 @@ def p_local_statement(p):
     | for_statement
     | if_statement
     | switch_statement
-    | return_statement
-    | BREAK         
-    | CONTINUE"""    
-    log_info("local_statement")
+    | break_statement
+    | continue_statement
+    | fallthrough_statement"""
+    p[0] = p[1]
 
-def p_block(p):
-    """block : LBRACE local_statement_list RBRACE
-             | LBRACE RBRACE"""
-    log_info("block")
+
+def p_break_statement(p):
+    "break_statement : BREAK"
+
+
+def p_continue_statement(p):
+    "continue_statement : CONTINUE"
 
 def p_local_statement_list(p):
     """local_statement_list : local_statement
     | local_statement_list local_statement"""
     log_info("local_statement_list")
+
 
 def p_for_statement(p):
     """for_statement : for_classic
@@ -261,18 +300,133 @@ def p_return_type(p):
     log_info("return_type")
 
 def p_type_list(p):
-    """type_list : type
-    | type_list COMMA type"""
+    """type_list : type_list COMMA type
+    | type"""
     log_info("type_list")
 
-def p_return_statement(p):
-    """return_statement : RETURN
-    | RETURN return_list"""
-    log_info("return_statement")
+
+def p_assignment(p):
+    """assignment : IDENTIFIER ASSIGN expression
+    | IDENTIFIER SHORT_ASSIGN expression"""
+    nombre = p[1]
+    tipo = p[3]
+    actual = context_stack[-1]["variables"]
+    actual[nombre] = tipo
+    p[0] = (nombre, tipo)
+
+
+def p_assignment_compound(p):
+    """assignment_compound : IDENTIFIER PLUS_ASSIGN expression
+    | IDENTIFIER MINUS_ASSIGN expression
+    | IDENTIFIER MULT_ASSIGN expression
+    | IDENTIFIER DIV_ASSIGN expression
+    | IDENTIFIER MOD_ASSIGN expression
+    | IDENTIFIER AND_ASSIGN expression
+    | IDENTIFIER OR_ASSIGN expression
+    | IDENTIFIER XOR_ASSIGN expression
+    | IDENTIFIER LSHIFT_ASSIGN expression
+    | IDENTIFIER RSHIFT_ASSIGN expression"""
+
+
+def p_variable_declaration(p):
+    """variable_declaration : VAR IDENTIFIER type ASSIGN expression
+    | CONST IDENTIFIER type ASSIGN expression
+    | VAR IDENTIFIER ASSIGN expression
+    | CONST IDENTIFIER ASSIGN expression"""
+    nombre = p[2]
+    tipo = p[-1]
+    context_stack[-1]['variables'][nombre] = tipo
+
+
+def p_type(p):
+    """type : primitive_type
+    | slice_type
+    | array_type
+    | map_type
+    | struct_type
+    | IDENTIFIER"""
+    p[0] = p[1]
+    
+
+
+def p_primitive_type(p):
+    """primitive_type : INT_TYPE
+    | FLOAT64_TYPE
+    | STRING_TYPE
+    | BOOL_TYPE"""
+    type = p.slice[1].type
+    if type == "INT_TYPE":
+        p[0] = "int"
+    elif type == "FLOAT64_TYPE":
+        p[0] = "float64"
+    elif type == "STRING_TYPE":
+        p[0] = "str"
+    elif type == "BOOL_TYPE":
+        p[0] = "bool"
+
+
+def p_slice_type(p):
+    "slice_type : LBRACKET RBRACKET primitive_type"
+
+
+def p_array_type(p):
+    """array_type : LBRACKET INT RBRACKET type"""
+
+
+def p_expression_binary(p):
+    """expression : binary_expression
+    | relational_expression
+    | logical_expression
+    | bitwise_expression"""
+
 
 def p_expression_unary(p):
-    """expression : LNOT expression"""
-    log_info("expression_unary")
+    """expression : PLUS expression %prec UPLUS
+    | MINUS expression %prec UMINUS
+    | LNOT expression %prec LNOT"""
+
+
+def p_expression_slice(p):
+    """expression : LBRACKET RBRACKET primitive_type LBRACE expression_list RBRACE
+    | LBRACKET RBRACKET primitive_type LBRACE RBRACE"""
+
+
+def p_expression_group(p):
+    "expression : LPAREN expression RPAREN"
+
+
+def p_expression_int(p):
+    "expression : INT"
+    p[0] = "int"
+
+
+def p_expression_float(p):
+    "expression : FLOAT64"
+    p[0] = "float64"
+
+def p_expression_boolean(p):
+    """expression : TRUE
+    | FALSE"""
+    p[0] = "bool"
+
+
+def p_expression_identifier(p):
+    "expression : IDENTIFIER"
+    nombre = p[1]
+    found = False
+    for context in context_stack[::-1]:
+        if nombre in context["variables"]:
+            p[0] = context["variables"][nombre]
+            found = True
+            break
+    if not found:
+        parse_errors.append(f"Error Semantico: Variable {nombre} no se encuentra definida.")
+
+
+def p_expression_string(p):
+    "expression : STRING"
+    p[0] = "str"
+
 
 def p_expression_postfix(p):
     """expression : IDENTIFIER PLUSPLUS
@@ -290,7 +444,7 @@ def p_expression_postfix(p):
 # Map literals with key:value pair initialization
 
 def p_if_statement(p):
-    """if_statement : IF expression block
+    """if_statement : IF expression block 
     | IF expression block ELSE block
     | IF expression block ELSE if_statement
     | IF if_assignment SEMICOLON expression block
@@ -328,7 +482,8 @@ def p_field_list(p):
     log_info("field_list")
 
 def p_field_declaration(p):
-    """field_declaration : IDENTIFIER type"""
+    """field_declaration : IDENTIFIER type
+    | IDENTIFIER"""
     log_info("field_declaration")
 
 def p_method_declaration(p):
@@ -389,49 +544,111 @@ def p_type_name(p):
 # Variadic functions calls validated
 # Print/Input statements: fmt.Println/Printf/Scanf with variadic argument support
 
-def p_switch_statement(p):
-    """switch_statement : SWITCH switch_expr LBRACE case_clause_list RBRACE
-    | SWITCH switch_expr LBRACE RBRACE
-    | SWITCH LBRACE case_clause_list RBRACE
-    | SWITCH LBRACE RBRACE
-    | SWITCH switch_assignment SEMICOLON switch_expr LBRACE case_clause_list RBRACE
-    | SWITCH switch_assignment SEMICOLON switch_expr LBRACE RBRACE
-    | SWITCH switch_assignment SEMICOLON LBRACE case_clause_list RBRACE
-    | SWITCH switch_assignment SEMICOLON LBRACE RBRACE"""
-    log_info("switch_statement")
+def find_variable(name):
+    for context in context_stack[::-1]:
+        if name in context["variables"]:
+            return context["variables"][name], context
+    parse_errors.append(f"Error Semantico: Variable {name} no se encuentra definida.")
+    return None, None
 
-def p_switch_expr(p):
-    """switch_expr : primary_expression"""
-    log_info("switch_expr")
+def p_binary_expression(p):
+    """binary_expression : expression PLUS expression
+    | expression MINUS expression
+    | expression TIMES expression
+    | expression DIVIDE expression
+    | expression MODULE expression"""
 
-def p_primary_expression(p):
-    """primary_expression : IDENTIFIER
-    | INT
-    | FLOAT64
-    | STRING
-    | TRUE
-    | FALSE
-    | LPAREN expression RPAREN
-    | IDENTIFIER LPAREN argument_list RPAREN
-    | primary_expression DOT IDENTIFIER
-    | primary_expression LBRACKET expression RBRACKET"""
-    log_info("primary_expression")
+def p_grouped_expression(p):
+    """grouped_expression : LPAREN expression RPAREN"""
 
-def p_case_clause_list(p):
-    """case_clause_list : case_clause
-    | case_clause_list case_clause"""
-    log_info("case_clause_list")
+def p_unary_expression(p):
+    """unary_expression : PLUS expression %prec UPLUS
+    | MINUS expression %prec UMINUS
+    | LNOT expression %prec LNOT"""
 
-def p_switch_assignment(p):
-    """switch_assignment : simple_assignment
-    | short_assignment
-    | local_var_dec"""
-    log_info("switch_assignment")
+def p_relational_expression(p):
+    """relational_expression : expression EQ expression
+    | expression NEQ expression
+    | expression LT expression
+    | expression LE expression
+    | expression GT expression
+    | expression GE expression"""
+
+def p_logical_expression(p):
+    """logical_expression : expression LAND expression
+    | expression LOR expression"""
+
+def p_bitwise_expression(p):
+    """bitwise_expression : expression AND expression
+    | expression OR expression
+    | expression XOR expression
+    | expression AND_NOT expression
+    | expression LSHIFT expression
+    | expression RSHIFT expression"""
+
+def p_postfix_expression(p):
+    """postfix_expression : IDENTIFIER PLUSPLUS
+    | IDENTIFIER MINUSMINUS"""
+
+def p_selector_expression(p):
+    """selector_expression : expression DOT IDENTIFIER"""
+
+def p_func_call_expression(p):
+    """func_call_expression : IDENTIFIER LPAREN argument_list RPAREN"""
+
+def p_call_expression(p):
+    """call_expression : print_expression
+    | input_expression
+    | func_call_expression"""
+
+def p_slice_expression(p):
+    """slice_expression : LBRACKET RBRACKET primitive_type LBRACE expression_list RBRACE
+    | LBRACKET RBRACKET primitive_type LBRACE RBRACE"""
+
+def p_enter_block(p):
+    """enter_block : """ 
+    context_stack.append(
+        {
+            "variables": {},
+        }
+    )
+
+def p_exit_block(p):
+    """exit_block : """
+    context_stack.pop()
+
+def p_case_expression_list(p):
+    """case_expression_list : expression
+    | case_expression_list COMMA expression"""
+    if len(p) == 4:
+        p[0] = p[1] + [p[3]]
+    else:
+        p[0] = [p[1]]
+
+def p_case_clauses(p):
+    """case_clauses : case_clause
+    | case_clauses case_clause"""
+    if len(p) == 3:
+        p[0] = p[1] + [p[2]]
+    else:
+        p[0] = [p[1]]
+
 
 def p_case_clause(p):
-    """case_clause : CASE case_expression_list COLON case_body
-    | DEFAULT COLON case_body"""
-    log_info("case_clause")
+    """case_clause : CASE case_expression_list COLON enter_block case_body exit_block
+    | DEFAULT COLON enter_block case_body exit_block"""
+    if p.slice[1].type == "CASE":
+        parent_expected_type = context_stack[-1].get("switch_expression", None)
+        expression_types = p[2]
+
+        for expression in expression_types:
+            if expression != parent_expected_type:
+                    parse_errors.append(f"Error Semantico: Tipo de expresion en case '{expression}' no coincide con tipo esperado '{parent_expected_type}'.")
+        
+        p[0] = ("case", p[2], p[5]) # case, case expressions, case body
+    else:
+        p[0] = ("default", p[4]) # default, case body
+    context_stack[-1]["case_clause"] = p[0]
 
 def p_case_expression_list(p):
     """case_expression_list : expression
@@ -439,39 +656,93 @@ def p_case_expression_list(p):
     log_info("case_expression_list")
 
 def p_case_body(p):
-    """case_body : local_statement_list
+    """case_body : statement_list
     | empty"""
-    log_info("case_body")
+    p[0] = p[1]
+    current = context_stack[-1]
+    current["case_body"] = p[0]
 
-def p_array_type(p):
-    """array_type : LBRACKET INT RBRACKET primitive_type"""
-    log_info("array_type")
+def p_fallthrough_statement(p):
+    """fallthrough_statement : FALLTHROUGH"""
+    p[0] = p[1]
 
-def p_expression_array(p):
-    """expression : array_type LBRACE expression_list RBRACE
-    | array_type LBRACE RBRACE"""
-    log_info("expression_array")
+def p_switch_primary(p):
+    """switch_primary : IDENTIFIER
+    | INT
+    | FLOAT64
+    | STRING
+    | TRUE
+    | FALSE"""
+    if p.slice[1].type == "IDENTIFIER":
+        p[0] = find_variable(p[1])[0]
+    elif p.slice[1].type == "INT":
+        p[0] = "int"
+    elif p.slice[1].type == "FLOAT64":
+        p[0] = "float64"
+    elif p.slice[1].type == "STRING":
+        p[0] = "str"
+    elif p.slice[1].type in ["TRUE", "FALSE"]:
+        p[0] = "bool"
+
+def p_switch_init(p):
+    """switch_init : assignment SEMICOLON switch_expression"""
+    p[0] = (p[1], p[3]) # assignment, expression
+
+def p_switch_expression(p):
+    """switch_expression : switch_primary
+    | empty"""
+    p[0] = p[1]
+
+def p_switch_header(p):
+    """switch_header : switch_expression
+    | switch_init"""
+    if isinstance(p[1], tuple) and len(p[1]) == 2:
+        assignment, expression = p[1]
+        context_stack[-1]["switch_expression"] = expression
+        context_stack[-1]["switch_assignment"] = assignment
+        p[0] = (assignment, expression)
+    else:
+        context_stack[-1]["switch_expression"] = p[1]
+        p[0] = p[1]
+
+
+def p_switch_statement(p):
+    """switch_statement : SWITCH enter_block switch_header LBRACE case_clauses RBRACE exit_block"""
+    header = p[3]
+    assignment, expression = None, None
+    if isinstance(header, tuple):
+        assignment, expression = header
+    else:
+        expression = header
     
-def p_expression_selector(p):
-    """expression : expression DOT IDENTIFIER"""
-    log_info("expression_selector")
+    if expression is None:
+        switch_type = "bool"
+    else:
+        switch_type = expression
+    
+    current = context_stack[-1]
+    current["switch_expression"] = switch_type
+    if assignment and not expression:
+        parse_errors.append("Error Semantico: Switch con inicializacion debe tener expresion.")
+    clauses = p[5]
+    default = False
+    for clause in clauses:
+        clause_type = clause[0]
+        if clause_type == "default":
+            if default:
+                parse_errors.append("Error Semantico: Multiple default clauses en el switch statement.")
+            default = True
+    p[0] = clauses
 
-def p_expression_method_call(p):
-    """expression : expression DOT IDENTIFIER LPAREN argument_list RPAREN"""
-    log_info("expression_method_call")
 
-def p_expression_index(p):
-    """expression : expression LBRACKET expression RBRACKET"""
-    log_info("expression_index")
 
-def p_func_call(p):
-    """expression : IDENTIFIER LPAREN argument_list RPAREN"""
-    log_info("func_call")
+def p_print_statement(p):
+    """print_expression : IDENTIFIER DOT IDENTIFIER LPAREN argument_list RPAREN"""
 
-def p_argument_list(p):
-    """argument_list : expression_list
-    | empty"""
-    log_info("argument_list")
+
+def p_input_statement(p):
+    """input_expression : IDENTIFIER DOT IDENTIFIER LPAREN AND IDENTIFIER COMMA argument_list RPAREN"""
+
 # END Contribution: Nicolas Fiallo
 
 def p_error(p):

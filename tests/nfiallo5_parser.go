@@ -5,6 +5,7 @@ import "fmt"
 
 var edad int = 20
 
+<<<<<<< Updated upstream
 type Person struct {
 	name string
 	age  int
@@ -13,9 +14,24 @@ type Person struct {
 func isWeekDay(day string) string {
 	switch day {
 	case "monday", "tuesday", "wednesday", "thursday", "friday":
+=======
+type Student struct { //struct
+	name string //string
+	age  int    //int
+}
+
+func isWeekDay(day int) string {
+	switch x := 2; x {
+	case 1, 2, 3, 4, 5:
+>>>>>>> Stashed changes
 		return "It's a weekday"
-	case "saturday", "sunday":
+	case 6, 7:
 		return "It's the weekend"
+<<<<<<< Updated upstream
+=======
+	case "string_prueba": //invalid case to test error detection
+		fallthrough
+>>>>>>> Stashed changes
 	default:
 		return "Not a valid day"
 	}

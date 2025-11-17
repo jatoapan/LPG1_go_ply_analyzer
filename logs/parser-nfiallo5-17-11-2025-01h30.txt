@@ -1,0 +1,128 @@
+======================================================================
+Go Language Parser - Syntax Analysis Report
+======================================================================
+File: .\tests\nfiallo5_parser.go
+User: nfiallo5
+Date: 2025-11-17 01:30:57
+======================================================================
+
+SOURCE CODE:
+----------------------------------------------------------------------
+   1 | // Algorithm to validate syntax highlighting for Nicolás Fiallo's contributions
+   2 | package main
+   3 | 
+   4 | import "fmt"
+   5 | 
+   6 | var edad int = 20 //int
+   7 | 
+   8 | type Student struct { //struct
+   9 | 	name string //string
+  10 | 	age  int    //int
+  11 | }
+  12 | 
+  13 | func isWeekDay(day int) string {
+  14 | 	switch x := 2; x {
+  15 | 	case 1, 2, 3, 4, 5:
+  16 | 		fmt.Println("It's a weekday")
+  17 | 	case 6, 7:
+  18 | 		fmt.Println("It's the weekend")
+  19 | 	case "string_prueba": //invalid case to test error detection
+  20 | 		fallthrough
+  21 | 	default:
+  22 | 		fmt.Println("Not a valid day")
+  23 | 	}
+  24 | 
+  25 | 	switch x := 2; y {
+  26 | 	case 1, 2, 3, 4, 5:
+  27 | 		return "It's a weekday"
+  28 | 	case 6, 7:
+  29 | 		return "It's the weekend"
+  30 | 	case "string_prueba": //invalid case to test error detection
+  31 | 		fallthrough
+  32 | 	default:
+  33 | 		return "Not a valid day"
+  34 | 	}
+  35 | }
+  36 | 
+  37 | func sum(nums ...int) int {
+  38 | 	total := 0
+  39 | 	for _, num := range nums {
+  40 | 		total += num
+  41 | 	}
+  42 | 	return total //return
+  43 | }
+  44 | 
+  45 | func main() {
+  46 | 	var a [5]int
+  47 | 	fmt.Println("emp:", a)
+  48 | 
+  49 | 	a[4] = 100
+  50 | 	fmt.Println("set:", a)
+  51 | 	fmt.Println("get:", a[4])
+  52 | 
+  53 | 	var twoD [2][3]int
+  54 | 	for i := range 2 {
+  55 | 		for j := range 3 {
+  56 | 			twoD[i][j] = i + j
+  57 | 		}
+  58 | 	}
+  59 | 
+  60 | 	const buleano = true //boolean
+  61 | 	sum(1, 2, 3, 4, 5)   //function call
+  62 | 	/*
+  63 | 		It validates multi-line comments
+  64 | 	*/
+  65 | 	if edad == 8 { //if statement
+  66 | 		fmt.Println(str)
+  67 | 	} else if buleano {
+  68 | 		numero-- //minus-minus
+  69 | 	} else { //else statement
+  70 | 		fmt.Println("mal calculado")
+  71 | 	}
+  72 | }
+  73 | 
+----------------------------------------------------------------------
+
+PARSING PROCESS:
+----------------------------------------------------------------------
+✓ Parsing completed successfully
+✓ Parse succeeded despite 15 recoverable grammar conflicts
+		Error detected: Error Semantico: Variable fmt no se encuentra definida.
+		Error detected: Error Semantico: Variable fmt no se encuentra definida.
+		Error detected: Error Semantico: Tipo de expresion en case 'str' no coincide con tipo esperado 'int'.
+		Error detected: Error Semantico: Variable fmt no se encuentra definida.
+		Error detected: Error Semantico: Variable y no se encuentra definida.
+		Error detected: Error Semantico: Tipo de expresion en case 'int' no coincide con tipo esperado 'None'.
+		Error detected: Error Semantico: Tipo de expresion en case 'int' no coincide con tipo esperado 'None'.
+		Error detected: Error Semantico: Tipo de expresion en case 'int' no coincide con tipo esperado 'None'.
+		Error detected: Error Semantico: Tipo de expresion en case 'int' no coincide con tipo esperado 'None'.
+		Error detected: Error Semantico: Tipo de expresion en case 'int' no coincide con tipo esperado 'None'.
+		Error detected: Error Semantico: Tipo de expresion en case 'int' no coincide con tipo esperado 'None'.
+		Error detected: Error Semantico: Tipo de expresion en case 'int' no coincide con tipo esperado 'None'.
+		Error detected: Error Semantico: Tipo de expresion en case 'str' no coincide con tipo esperado 'None'.
+		Error detected: Error Semantico: Switch con inicializacion debe tener expresion.
+		Error detected: Syntax error at ',' (line 39)
+
+VALIDATED GRAMMAR RULES:
+----------------------------------------------------------------------
+✓ If statements
+✓ Else clauses
+✓ For loops
+✓ Switch statements
+✓ Struct type declarations
+✓ Composite literals (struct/map initialization)
+✓ Package declaration
+✓ Import statements
+✓ Function declarations
+✓ Variable declarations
+✓ Return statements
+✓ Array types
+✓ Post-increment/decrement
+✓ Arithmetic expressions
+✓ Relational operators
+✓ Short variable declarations
+✓ Variadic parameters/calls
+
+======================================================================
+PARSING SUCCESS - All syntax rules validated correctly
+======================================================================
