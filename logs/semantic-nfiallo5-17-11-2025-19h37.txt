@@ -1,0 +1,332 @@
+======================================================================
+Go Language Parser - Syntax & Semantic Analysis Report
+======================================================================
+File: .\tests\nfiallo5_parser.go
+User: nfiallo5
+Date: 2025-11-17 19:37:51
+======================================================================
+
+SOURCE CODE:
+----------------------------------------------------------------------
+   1 | // Algorithm to validate syntax highlighting for Nicolás Fiallo's contributions
+   2 | package main
+   3 | 
+   4 | import "fmt"
+   5 | 
+   6 | var edad int = 20
+   7 | 
+   8 | const pi float64 = 3.14
+   9 | 
+  10 | var lista [5]int = [5]int{5, 4, 3, 2, 1}
+  11 | var valor = "Hola Mundo"
+  12 | 
+  13 | // type struct
+  14 | type Student struct { //struct
+  15 | 	name string //string
+  16 | 	age  int    //int
+  17 | }
+  18 | 
+  19 | type Profesor struct {
+  20 | 	name    string
+  21 | 	subject string
+  22 | 	Student
+  23 | }
+  24 | 
+  25 | // switch_initialization
+  26 | func switch_con_asignacion() string {
+  27 | 	switch x := 2; x {
+  28 | 	case 1, 2, 3, 4, 5:
+  29 | 		return "It's a weekday"
+  30 | 	case 6, 7:
+  31 | 		return "It's the weekend"
+  32 | 	case "string_prueba": //invalid case to test error detection
+  33 | 		fmt.Println("Caso inválido")
+  34 | 	default:
+  35 | 		return "Not a valid day"
+  36 | 	}
+  37 | }
+  38 | 
+  39 | // switch_true
+  40 | func switch_true() {
+  41 | 	switch {
+  42 | 	case edad < 18:
+  43 | 		fmt.Println("Menor de edad")
+  44 | 	case edad >= 18 && edad < 65:
+  45 | 		fmt.Println("Adulto")
+  46 | 	default:
+  47 | 		fmt.Println("Anciano")
+  48 | 	}
+  49 | }
+  50 | 
+  51 | // switch_expression
+  52 | func switch_expresion() {
+  53 | 	switch valor {
+  54 | 	case "Hola Mundo":
+  55 | 		fmt.Println("Saludo detectado")
+  56 | 	case "Adiós":
+  57 | 		fmt.Println("Despedida detectada")
+  58 | 	default:
+  59 | 		fmt.Println("Otro valor")
+  60 | 	}
+  61 | }
+  62 | 
+  63 | func broken_switch() {
+  64 | 	switch valor {
+  65 | 	case "Test": // false string case
+  66 | 		fmt.Println("Test case")
+  67 | 	case 123: // Invalid int case
+  68 | 		fmt.Println("Invalid case")
+  69 | 	case 25.4: // Invalid float case
+  70 | 		fmt.Println("Another invalid case")
+  71 | 	}
+  72 | }
+  73 | 
+  74 | func main() {
+  75 | 	// array initialization
+  76 | 	var a = [5]int{10, 20, 30, 40, 50}
+  77 | 	fmt.Println("array:", a)
+  78 | 
+  79 | 	// array
+  80 | 	var nums = [...]int{1, 2, 3, 4, 5}
+  81 | 	fmt.Println("slice:", nums)
+  82 | 
+  83 | 	/*
+  84 | 		It validates multi-line comments
+  85 | 	*/
+  86 | 	if edad == 20 {
+  87 | 		fmt.Println("Edad correcta")
+  88 | 	} else if buleano {
+  89 | 		edad++
+  90 | 		fmt.Println("Edad incrementada")
+  91 | 	} else {
+  92 | 		fmt.Println("mal calculado")
+  93 | 	}
+  94 | }
+  95 | 
+----------------------------------------------------------------------
+
+PRODUCTIONS RECOGNIZED:
+----------------------------------------------------------------------
+✔ package_declaration
+✔ simple_import
+✔ import
+✔ primitive_type
+✔ type
+✔ expression
+✔ global_var_dec
+✔ global_statement
+✔ global_statement_list
+✔ primitive_type
+✔ type
+✔ expression
+✔ global_const_dec
+✔ global_statement
+✔ global_statement_list
+✔ primitive_type
+✔ array_type
+✔ type
+✔ primitive_type
+✔ array_type
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ array_literal
+✔ global_var_dec
+✔ global_statement
+✔ global_statement_list
+✔ expression
+✔ global_var_dec
+✔ global_statement
+✔ global_statement_list
+✔ primitive_type
+✔ type
+✔ field_declaration
+✔ field_list
+✔ primitive_type
+✔ type
+✔ field_declaration
+✔ field_list
+✔ struct_type
+✔ type_alias
+✔ type_declaration
+✔ global_statement
+✔ global_statement_list
+✔ primitive_type
+✔ type
+✔ field_declaration
+✔ field_list
+✔ primitive_type
+✔ type
+✔ field_declaration
+✔ field_list
+✔ field_declaration
+✔ field_list
+✔ struct_type
+✔ type_alias
+✔ type_declaration
+✔ global_statement
+✔ global_statement_list
+✔ parameter_list
+✔ primitive_type
+✔ type
+✔ return_type
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ return_list
+✔ return_statement
+✔ expression
+✔ expression
+✔ expression
+✔ return_list
+✔ return_statement
+✔ expression
+✔ expression
+✔ expression_list
+✔ expression
+✔ return_list
+✔ return_statement
+✔ function_declaration
+✔ global_statement
+✔ global_statement_list
+✔ parameter_list
+✔ return_type
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ function_declaration
+✔ global_statement
+✔ global_statement_list
+✔ parameter_list
+✔ return_type
+✔ expression
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ function_declaration
+✔ global_statement
+✔ global_statement_list
+✔ parameter_list
+✔ return_type
+✔ expression
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression
+✔ expression_list
+✔ function_declaration
+✔ global_statement
+✔ global_statement_list
+✔ parameter_list
+✔ return_type
+✔ primitive_type
+✔ array_type
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ array_literal
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ primitive_type
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ array_literal
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression
+✔ expression
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_postfix
+✔ expression
+✔ expression_list
+✔ expression
+✔ expression_list
+✔ if_statement
+✔ if_statement
+✔ function_declaration
+✔ global_statement
+✔ global_statement_list
+✔ program
+
+✓ No syntax errors detected
+
+SEMANTIC ERRORS:
+----------------------------------------------------------------------
+✗ Error Semantico: Tipo de expresion en case 'str' no coincide con tipo esperado 'int'.
+✗ Error Semantico: Tipo de expresion en case 'int' no coincide con tipo esperado 'str'.
+✗ Error Semantico: Tipo de expresion en case 'float64' no coincide con tipo esperado 'str'.
+✗ Error Semantico: Variable buleano no se encuentra definida.
+
+VALIDATED GRAMMAR RULES:
+----------------------------------------------------------------------
+✓ Package declaration
+✓ Import statements
+✓ Function declarations
+✓ Variable declarations
+✓ Constant declarations
+✓ Short variable declarations
+✓ If statements
+✓ Else clauses
+✓ For loops
+✓ Switch statements
+✓ Struct type declarations
+✓ Array types
+✓ Post-increment/decrement
+✓ Arithmetic expressions
+✓ Relational operators
+✓ Logical operators
+
+======================================================================

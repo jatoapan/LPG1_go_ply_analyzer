@@ -5,12 +5,24 @@ import "fmt"
 
 var edad int = 20
 
+const pi float64 = 3.14
+
+var valor = "Hola Mundo"
+
+// type struct
 type Student struct { //struct
 	name string //string
 	age  int    //int
 }
 
-func isWeekDay(day int) string {
+type Profesor struct {
+	name    string
+	subject string
+	Student
+}
+
+// switch_initialization
+func switch_con_asignacion() string {
 	switch x := 2; x {
 	case 1, 2, 3, 4, 5:
 		return "It's a weekday"
@@ -23,27 +35,52 @@ func isWeekDay(day int) string {
 	}
 }
 
-func sum(nums ...int) int {
-	total := 0
-	for i := 0; i < len(nums); i++ {
-		total += nums[i]
+// switch_true
+func switch_true() {
+	switch {
+	case edad < 18:
+		fmt.Println("Menor de edad")
+	case edad >= 18 && edad < 65:
+		fmt.Println("Adulto")
+	default:
+		fmt.Println("Anciano")
 	}
-	return total
+}
+
+// switch_expression
+func switch_expresion() {
+	switch valor {
+	case "Hola Mundo":
+		fmt.Println("Saludo detectado")
+	case "Adiós":
+		fmt.Println("Despedida detectada")
+	default:
+		fmt.Println("Otro valor")
+	}
+}
+
+func broken_switch() {
+	switch valor {
+	case "Test": // false string case
+		fmt.Println("Test case")
+	case 123: // Invalid int case
+		fmt.Println("Invalid case")
+	case 25.4: // Invalid float case
+		fmt.Println("Another invalid case")
+	}
 }
 
 func main() {
+	// array initialization
 	var a = [5]int{10, 20, 30, 40, 50}
 	fmt.Println("array:", a)
 
+	// array
 	var nums = []int{1, 2, 3, 4, 5}
 	fmt.Println("slice:", nums)
 
-	var array = [2]int{1, 2, 3, 4}
-	fmt.Println("1D array:", array)
-
-	const buleano = true
-	result := sum(1, 2, 3, 4, 5)
-	fmt.Println("sum:", result)
+	// let the program count
+	var fixed = [...]float64{2.5, 3.5, 4.5}
 
 	/*
 		It validates multi-line comments
@@ -56,9 +93,4 @@ func main() {
 	} else {
 		fmt.Println("mal calculado")
 	}
-
-	day := isWeekDay("monday")
-	fmt.Println(day)
-
-	fmt.Println("Person:", p)
 }
