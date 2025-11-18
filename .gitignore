@@ -3,6 +3,10 @@
 # Project-specific ignores for PLY lexer/parser implementation
 ################################################################################
 
+#PLY Yacc
+parser.out
+parsetab.py
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

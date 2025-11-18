@@ -121,7 +121,6 @@ def p_global_var_dec(p):
             semantic_errors.append(
                 f"Error semántico: La variable '{var_name}' ya fue declarada en este ámbito."
             )
-
     if len(p) == 4: # VAR IDENTIFIER type
         tipo = p[3]
         context_stack[-1]['variables'][var_name] = tipo
@@ -133,7 +132,7 @@ def p_global_var_dec(p):
         if tipo != p[5]:
             parse_errors.append(f"Error Semantico: Tipo de variable '{tipo}' no coincide con tipo de expresion asignada '{p[5]}'.")
         else:
-            context_stack[-1]['variables'][var_name] = tipo
+            context_stack[-1]["variables"][var_name] = p[4]
     log_info("global_var_dec")
 
 
@@ -147,16 +146,11 @@ def p_global_const_dec(p):
         )
     else:
         context_stack[0]["consts"][var_name] = True
-
     if len(p) == 6:
         tipo = p[3]
-        if tipo != p[5]:
-            semantic_errors.append(f"Error Semantico: Tipo de constante '{tipo}' no coincide con tipo de expresion asignada '{p[5]}'.")
-        else:
-            context_stack[-1]['variables'][var_name] = tipo
     else:
         tipo = p[4]
-        context_stack[-1]['variables'][var_name] = tipo
+    context_stack[-1]["variables"][var_name] = tipo
     log_info("global_const_dec")
 
 
@@ -225,8 +219,7 @@ def p_operator_assign(p):
 def p_simple_assignment(p):
     """simple_assignment : IDENTIFIER ASSIGN expression"""
     log_info("simple_assignment")
-    context_stack[-1]["variables"][p[1]] = p[3]
-    p[0] = p[3]
+
 
 
 def p_type(p):
@@ -256,7 +249,7 @@ def p_expression_list(p):
 
 
 def p_expression_group(p):
-    "expression : grouped_expression"
+    "expression : LPAREN expression RPAREN"
     log_info("expression_group")
 
 
@@ -368,10 +361,7 @@ def p_return_list(p):
     """return_list : expression
     | return_list COMMA expression"""
     log_info("return_list")
-    if len(p) == 4:
-        p[0] = p[1] + [p[3]]
-    else:
-        p[0] = [p[1]]
+
 
 
 def p_function_declaration(p):
@@ -412,11 +402,6 @@ def p_return_statement(p):
     """return_statement : RETURN
     | RETURN return_list"""
     log_info("return_statement")
-    if len(p) == 3:
-        p[0] = p[2]
-    else:
-        p[0] = None
-
 
 
 def p_type_list(p):
@@ -444,7 +429,6 @@ def p_variable_declaration(p):
     | CONST IDENTIFIER type ASSIGN expression
     | VAR IDENTIFIER ASSIGN expression
     | CONST IDENTIFIER ASSIGN expression"""
-    print(f"variable declared: {p}")
     nombre = p[2]
     tipo = p[-1]
     # Semantic check: Variable redeclaration in same scope
@@ -535,7 +519,8 @@ def p_expression_string(p):
 
 
 def p_expression_postfix(p):
-    """expression : postfix_expression"""
+    """expression : IDENTIFIER PLUSPLUS
+    | IDENTIFIER MINUSMINUS"""
     var_name = p[1]
     if var_name in context_stack[0]["consts"]:
         semantic_errors.append(
@@ -728,7 +713,6 @@ def p_postfix_expression(p):
 # def p_selector_expression(p):
 #     """selector_expression : expression DOT IDENTIFIER"""
 
-
 def p_func_call_expression(p):
     """func_call_expression : IDENTIFIER LPAREN argument_list RPAREN"""
 
@@ -741,7 +725,6 @@ def p_call_expression(p):
 # def p_slice_expression(p):
 #     """slice_expression : LBRACKET RBRACKET primitive_type LBRACE expression_list RBRACE
 #     | LBRACKET RBRACKET primitive_type LBRACE RBRACE"""
-
 
 def p_enter_block(p):
     """enter_block :"""
@@ -792,7 +775,6 @@ def p_case_clause(p):
     else:
         p[0] = ("default", p[4])  # default, case body
     context_stack[-1]["case_clause"] = p[0]
-    print(context_stack)
 
 
 def p_case_body(p):
@@ -824,9 +806,7 @@ def p_switch_primary(p):
 
 def p_switch_init(p):
     """switch_init : assignment SEMICOLON switch_expression"""
-    if p[3] is None:
-        parse_errors.append("Error Semantico: Switch con inicializacion debe tener expresion.")
-    p[0] = (p[1], p[3]) # assignment, expression
+    p[0] = (p[1], p[3])
 
 
 def p_switch_expression(p):
@@ -843,10 +823,6 @@ def p_switch_header(p):
         context_stack[-1]["switch_expression"] = expression
         context_stack[-1]["switch_assignment"] = assignment
         p[0] = (assignment, expression)
-    elif p[1] is None:
-        switch_type = "bool"
-        context_stack[-1]["switch_expression"] = switch_type
-        p[0] = switch_type
     else:
         context_stack[-1]["switch_expression"] = p[1]
         p[0] = p[1]
@@ -854,7 +830,6 @@ def p_switch_header(p):
 
 def p_switch_statement(p):
     """switch_statement : SWITCH enter_block switch_header LBRACE case_clauses RBRACE exit_block"""
-    print(context_stack)
     header = p[3]
     assignment, expression = None, None
     if isinstance(header, tuple):
@@ -866,8 +841,8 @@ def p_switch_statement(p):
         switch_type = "bool"
     else:
         switch_type = expression
-    
-    current = context_stack[-1]["switch"] = {}
+
+    current = context_stack[-1]
     current["switch_expression"] = switch_type
     if assignment and not expression:
         semantic_errors.append(
@@ -901,7 +876,6 @@ def p_input_statement(p):
 def p_argument_list(p):
     """argument_list : expression_list
     | empty"""
-    p[0] = p[1]
 
 
 # END Contribution: Nicolas Fiallo

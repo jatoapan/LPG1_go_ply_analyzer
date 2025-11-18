@@ -7,6 +7,7 @@ var edad int = 20
 
 const pi float64 = 3.14
 
+var lista [5]int = [5]int{5, 4, 3, 2, 1}
 var valor = "Hola Mundo"
 
 // type struct
@@ -76,11 +77,8 @@ func main() {
 	fmt.Println("array:", a)
 
 	// array
-	var nums = []int{1, 2, 3, 4, 5}
+	var nums = [...]int{1, 2, 3, 4, 5}
 	fmt.Println("slice:", nums)
-
-	// let the program count
-	var fixed = [...]float64{2.5, 3.5, 4.5}
 
 	/*
 		It validates multi-line comments
