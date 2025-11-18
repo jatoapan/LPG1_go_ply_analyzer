@@ -130,7 +130,7 @@ def p_global_var_dec(p):
     elif len(p) == 6:
         tipo = p[3]
         if tipo != p[5]:
-            parse_errors.append(f"Error Semantico: Tipo de variable '{tipo}' no coincide con tipo de expresion asignada '{p[5]}'.")
+            semantic_errors.append(f"Error Semantico: Tipo de variable '{tipo}' no coincide con tipo de expresion asignada '{p[5]}'.")
         else:
             context_stack[-1]["variables"][var_name] = p[4]
     log_info("global_var_dec")
@@ -219,7 +219,8 @@ def p_operator_assign(p):
 def p_simple_assignment(p):
     """simple_assignment : IDENTIFIER ASSIGN expression"""
     log_info("simple_assignment")
-
+    context_stack[-1]["variables"][p[1]] = p[3]
+    p[0] = p[3]
 
 
 def p_type(p):
@@ -246,11 +247,16 @@ def p_expression_list(p):
     """expression_list : expression
     | expression_list COMMA expression"""
     log_info("expression_list")
+    if len(p) == 4:
+        p[0] = p[1] + [p[3]]
+    else:
+        p[0] = [p[1]]
 
 
 def p_expression_group(p):
     "expression : LPAREN expression RPAREN"
     log_info("expression_group")
+    p[0] = p[2]
 
 
 def p_short_assignment(p):
@@ -361,6 +367,10 @@ def p_return_list(p):
     """return_list : expression
     | return_list COMMA expression"""
     log_info("return_list")
+    if len(p) == 4:
+        p[0] = p[1] + [p[3]]
+    else:
+        p[0] = [p[1]]
 
 
 
@@ -402,6 +412,10 @@ def p_return_statement(p):
     """return_statement : RETURN
     | RETURN return_list"""
     log_info("return_statement")
+    if len(p) == 3:
+        p[0] = p[2]
+    else:
+        p[0] = None
 
 
 def p_type_list(p):
@@ -461,7 +475,45 @@ def p_primitive_type(p):
 
 
 def p_array_type(p):
-    """array_type : LBRACKET INT RBRACKET type"""
+    """array_type : LBRACKET INT RBRACKET primitive_type"""
+    log_info("array_type")
+    current = context_stack[-1]["array"] = {}
+    current["element_type"] = p[4]
+    current["size"] = p[2]
+    p[0] = "array"  # element_type, size
+
+def p_array_literal(p):
+    """expression : array_type LBRACE RBRACE
+    | array_type LBRACE expression_list RBRACE
+    | LBRACKET ELLIPSIS RBRACKET primitive_type LBRACE RBRACE
+    | LBRACKET ELLIPSIS RBRACKET primitive_type LBRACE expression_list RBRACE"""
+    log_info("array_literal")
+    current = context_stack[-1]
+
+    if isinstance(p[1], str) and p[1] == "array":
+        array_info = current.get("array", {})
+        size = array_info["size"]
+        element_type = array_info.get("element_type", None)
+        if len(p) == 5:  # array_type LBRACE RBRACE
+            expected_types = p[3]
+            for t in expected_types:
+                if t != element_type:
+                    semantic_errors.append(f"Error Semantico: Tipo de elemento en array '{t}' no coincide con tipo esperado '{element_type}'.") 
+            if len(expected_types) > size:
+                semantic_errors.append(f"Error Semantico: Tamaño de array declarado '{size}' no coincide con número de elementos proporcionados '{len(expected_types)}'.")
+    else:
+        array_info = current["array"] = {}
+        element_type = p[4]
+        array_info["element_type"] = element_type
+        if len(p) == 7:  # LBRACKET ELLIPSIS RBRACKET primitive_type LBRACE RBRACE
+            array_info["size"] = 0
+            types = p[6]
+            for t in types:
+                if t != element_type:
+                    semantic_errors.append(f"Error Semantico: Tipo de elemento en array '{t}' no coincide con tipo esperado '{element_type}'.")
+        else: # LBRACKET ELLIPSIS RBRACKET primitive_type LBRACE expression_list RBRACE
+            array_info['size'] = len(p[6])
+    p[0] = "array"
 
 
 def p_expression_binary(p):
@@ -863,9 +915,9 @@ def p_switch_statement(p):
 
 def p_print_statement(p):
     """print_expression : IDENTIFIER DOT IDENTIFIER LPAREN argument_list RPAREN"""
-    if p[1] != "fmt" or p[2] not in ["Println", "Printf", "Print"]:
+    if p[1] != "fmt" or p[3] not in ["Println", "Printf", "Print"]:
         semantic_errors.append(
-            f"Error Semantico: Llamada a funcion de impresion invalida '{p[1]}.{p[2]}'."
+            f"Error Semantico: Llamada a funcion de impresion invalida '{p[1]}.{p[3]}'."
         )
 
 
