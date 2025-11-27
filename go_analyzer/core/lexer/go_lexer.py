@@ -303,4 +303,3 @@ def run_lexer_gui(source_code: str) -> str:
             error_output += "\n\n"
         error_output += f"Error during lexical analysis: {str(e)}"
         return error_output
-

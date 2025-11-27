@@ -121,16 +121,18 @@ def p_global_var_dec(p):
             semantic_errors.append(
                 f"Error semántico: La variable '{var_name}' ya fue declarada en este ámbito."
             )
-    if len(p) == 4: # VAR IDENTIFIER type
+    if len(p) == 4:  # VAR IDENTIFIER type
         tipo = p[3]
-        context_stack[-1]['variables'][var_name] = tipo
-    elif len(p) == 5: # VAR IDENTIFIER ASSIGN expression
+        context_stack[-1]["variables"][var_name] = tipo
+    elif len(p) == 5:  # VAR IDENTIFIER ASSIGN expression
         tipo = p[4]
-        context_stack[-1]['variables'][var_name] = tipo
+        context_stack[-1]["variables"][var_name] = tipo
     elif len(p) == 6:
         tipo = p[3]
         if tipo != p[5]:
-            semantic_errors.append(f"Error Semantico: Tipo de variable '{tipo}' no coincide con tipo de expresion asignada '{p[5]}'.")
+            semantic_errors.append(
+                f"Error Semantico: Tipo de variable '{tipo}' no coincide con tipo de expresion asignada '{p[5]}'."
+            )
         else:
             context_stack[-1]["variables"][var_name] = p[4]
     log_info("global_var_dec")
@@ -373,7 +375,6 @@ def p_return_list(p):
         p[0] = [p[1]]
 
 
-
 def p_function_declaration(p):
     "function_declaration : FUNC IDENTIFIER LPAREN parameter_list RPAREN return_type block"
     func_name = p[2]
@@ -482,6 +483,7 @@ def p_array_type(p):
     current["size"] = p[2]
     p[0] = "array"  # element_type, size
 
+
 def p_array_literal(p):
     """expression : array_type LBRACE RBRACE
     | array_type LBRACE expression_list RBRACE
@@ -498,9 +500,13 @@ def p_array_literal(p):
             expected_types = p[3]
             for t in expected_types:
                 if t != element_type:
-                    semantic_errors.append(f"Error Semantico: Tipo de elemento en array '{t}' no coincide con tipo esperado '{element_type}'.") 
+                    semantic_errors.append(
+                        f"Error Semantico: Tipo de elemento en array '{t}' no coincide con tipo esperado '{element_type}'."
+                    )
             if len(expected_types) > size:
-                semantic_errors.append(f"Error Semantico: Tamaño de array declarado '{size}' no coincide con número de elementos proporcionados '{len(expected_types)}'.")
+                semantic_errors.append(
+                    f"Error Semantico: Tamaño de array declarado '{size}' no coincide con número de elementos proporcionados '{len(expected_types)}'."
+                )
     else:
         array_info = current["array"] = {}
         element_type = p[4]
@@ -510,9 +516,11 @@ def p_array_literal(p):
             types = p[6]
             for t in types:
                 if t != element_type:
-                    semantic_errors.append(f"Error Semantico: Tipo de elemento en array '{t}' no coincide con tipo esperado '{element_type}'.")
-        else: # LBRACKET ELLIPSIS RBRACKET primitive_type LBRACE expression_list RBRACE
-            array_info['size'] = len(p[6])
+                    semantic_errors.append(
+                        f"Error Semantico: Tipo de elemento en array '{t}' no coincide con tipo esperado '{element_type}'."
+                    )
+        else:  # LBRACKET ELLIPSIS RBRACKET primitive_type LBRACE expression_list RBRACE
+            array_info["size"] = len(p[6])
     p[0] = "array"
 
 
@@ -762,8 +770,10 @@ def p_postfix_expression(p):
     """postfix_expression : IDENTIFIER PLUSPLUS
     | IDENTIFIER MINUSMINUS"""
 
+
 # def p_selector_expression(p):
 #     """selector_expression : expression DOT IDENTIFIER"""
+
 
 def p_func_call_expression(p):
     """func_call_expression : IDENTIFIER LPAREN argument_list RPAREN"""
@@ -774,9 +784,11 @@ def p_call_expression(p):
     | input_expression
     | func_call_expression"""
 
+
 # def p_slice_expression(p):
 #     """slice_expression : LBRACKET RBRACKET primitive_type LBRACE expression_list RBRACE
 #     | LBRACKET RBRACKET primitive_type LBRACE RBRACE"""
+
 
 def p_enter_block(p):
     """enter_block :"""
@@ -1296,6 +1308,167 @@ def run_semantic(file_path, github_user):
 
             suppress_errors = False
             return False
+
+
+# END Contribution: Juan Fernandez
+
+# START Contribution: Juan Fernandez
+#
+# Add run_parser_gui(source_code: str) -> str to go_analyzer/core/parser/go_parser.py
+# Function performs parsing and semantic analysis on string input
+# Returns comprehensive formatted output (syntax + semantic results)
+# Properly resets global state before each analysis
+# Formats symbol table and error lists for display
+# =============================================================================
+
+
+def run_parser_gui(source_code: str) -> str:
+    """
+    GUI-compatible parser wrapper that accepts source code as string.
+
+    Performs both syntax and semantic analysis on Go source code.
+
+    Args:
+        source_code: Go source code as string
+
+    Returns:
+        Formatted string containing:
+        - Source code with line numbers
+        - Syntax errors (if any)
+        - Semantic errors (if any)
+        - Symbol table (variables, constants, functions)
+        - Production count
+    """
+    global syntax_errors, semantic_errors, success_log, parse_errors
+    global suppress_errors, context_stack, loop_context_stack
+
+    # Reset all global state for clean analysis
+    syntax_errors = []
+    semantic_errors = []
+    success_log = []
+    parse_errors = []
+    suppress_errors = True
+    context_stack = [
+        {
+            "consts": {},
+            "variables": {},
+            "functions": {},
+            "tipos": {
+                "str-funciones": ["len"],
+            },
+        }
+    ]
+    loop_context_stack = []
+
+    # Build output string
+    output_lines = []
+
+    try:
+        # Header
+        output_lines.append("=" * 70)
+        output_lines.append("PARSING & SEMANTIC ANALYSIS RESULTS")
+        output_lines.append("=" * 70)
+        output_lines.append("")
+
+        # Source code section
+        output_lines.append("SOURCE CODE:")
+        output_lines.append("-" * 70)
+        for i, line in enumerate(source_code.split("\n"), 1):
+            output_lines.append(f"{i:4d} | {line}")
+        output_lines.append("-" * 70)
+        output_lines.append("")
+
+        # Perform parsing (this will populate syntax_errors and semantic_errors)
+        result = parser.parse(source_code, lexer=lexer, debug=False)
+
+        # Syntax Analysis section
+        output_lines.append("SYNTAX ANALYSIS:")
+        output_lines.append("-" * 70)
+        if syntax_errors:
+            output_lines.append(f"✗ Syntax Errors Found: {len(syntax_errors)}")
+            for i, err in enumerate(syntax_errors, 1):
+                output_lines.append(f"  {i}. {err}")
+        else:
+            output_lines.append("✓ No syntax errors")
+        output_lines.append("")
+
+        # Semantic Analysis section
+        output_lines.append("SEMANTIC ANALYSIS:")
+        output_lines.append("-" * 70)
+        if semantic_errors:
+            output_lines.append(f"✗ Semantic Errors Found: {len(semantic_errors)}")
+            for i, err in enumerate(semantic_errors, 1):
+                output_lines.append(f"  {i}. {err}")
+        else:
+            output_lines.append("✓ No semantic errors")
+        output_lines.append("")
+
+        # Symbol Table section
+        output_lines.append("SYMBOL TABLE:")
+        output_lines.append("-" * 70)
+
+        # Extract global context
+        global_context = context_stack[0] if context_stack else {}
+
+        # Display Variables
+        variables = global_context.get("variables", {})
+        if variables:
+            output_lines.append("Global Variables:")
+            for var_name, var_type in variables.items():
+                output_lines.append(f"  • {var_name}: {var_type}")
+        else:
+            output_lines.append("Global Variables: (none)")
+        output_lines.append("")
+
+        # Display Constants
+        constants = global_context.get("consts", {})
+        if constants:
+            output_lines.append("Global Constants:")
+            for const_name in constants.keys():
+                # Get type from variables table if available
+                const_type = variables.get(const_name, "unknown")
+                output_lines.append(f"  • {const_name}: {const_type}")
+        else:
+            output_lines.append("Global Constants: (none)")
+        output_lines.append("")
+
+        # Display Functions
+        functions = global_context.get("functions", {})
+        if functions:
+            output_lines.append("Global Functions:")
+            for func_name in functions.keys():
+                output_lines.append(f"  • {func_name}")
+        else:
+            output_lines.append("Global Functions: (none)")
+        output_lines.append("")
+
+        # Summary
+        output_lines.append("-" * 70)
+        output_lines.append(f"Productions Recognized: {len(success_log)}")
+        output_lines.append(f"Total Syntax Errors: {len(syntax_errors)}")
+        output_lines.append(f"Total Semantic Errors: {len(semantic_errors)}")
+        output_lines.append("=" * 70)
+
+        # Reset suppress flag
+        suppress_errors = False
+
+        return "\n".join(output_lines)
+
+    except Exception as e:
+        # Handle unexpected errors gracefully
+        error_output = "\n".join(output_lines) if output_lines else ""
+        if error_output:
+            error_output += "\n\n"
+        error_output += "=" * 70 + "\n"
+        error_output += "✗ PARSING FAILED\n"
+        error_output += "=" * 70 + "\n"
+        error_output += f"Error during parsing: {str(e)}\n"
+        error_output += "=" * 70
+
+        # Reset suppress flag
+        suppress_errors = False
+
+        return error_output
 
 
 # END Contribution: Juan Fernandez
