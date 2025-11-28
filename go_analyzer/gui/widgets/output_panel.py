@@ -2,6 +2,7 @@
 Output panel for displaying analysis results.
 """
 
+import re
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QTabWidget, QTextEdit,
     QTableWidget, QTableWidgetItem, QHeaderView, QSplitter
@@ -112,10 +113,10 @@ class OutputPanel(QWidget):
         self.tokens_table.setRowCount(len(tokens))
 
         for i, token in enumerate(tokens):
-            self.tokens_table.setItem(i, 0, QTableWidgetItem(str(token.type)))
-            self.tokens_table.setItem(i, 1, QTableWidgetItem(str(token.value)))
-            self.tokens_table.setItem(i, 2, QTableWidgetItem(str(token.lineno)))
-            self.tokens_table.setItem(i, 3, QTableWidgetItem(str(token.column)))
+            self.tokens_table.setItem(i, 0, QTableWidgetItem(str(token['type'])))
+            self.tokens_table.setItem(i, 1, QTableWidgetItem(str(token['value'])))
+            self.tokens_table.setItem(i, 2, QTableWidgetItem(str(token['line'])))
+            self.tokens_table.setItem(i, 3, QTableWidgetItem(str(token.get('column', 'N/F'))))
 
         self.log(f"Displayed {len(tokens)} tokens")
 
@@ -179,19 +180,42 @@ class OutputPanel(QWidget):
 
         # Collect all errors
         for error in lexical_errors:
-            all_errors.append(("Error", error.message, error.line, error.column))
+            lexical_pattern = re.compile(r'Illegal character \'(.*?)\' on line (\d+), column (\d+)')
+            match = lexical_pattern.match(error)
+            if match:
+                char = match.group(1)
+                line = int(match.group(2))
+                column = int(match.group(3))
+                all_errors.append(("Error", f"Illegal character '{char}'", line, column))
+            else:
+                all_errors.append(("Error", error, 'N/F', 'N/F'))
 
         for error in syntax_errors:
-            all_errors.append(("Error", error.message, error.line, error.column))
+            "✗ Error Sintactico {i}: {err}"
+            syntactic_pattern = re.compile(r'✗ Error Sintactico (\d+): (.*)')
+            match = syntactic_pattern.match(error)
+            if match:
+                line_info = match.group(1)
+                message = match.group(2)
+                all_errors.append(("Error", message, line_info, 'N/F'))
+            else:
+                all_errors.append(("Error", error, 'N/F', 'N/F'))
 
         for error in semantic_errors:
-            all_errors.append((error.severity.capitalize(), error.message, error.line, error.column))
+            semantic_pattern = re.compile(r'(\d+). (.*)')
+            match = semantic_pattern.match(error)
+            if match:
+                line_info = match.group(1)
+                message = match.group(2)
+                all_errors.append(("Error", message, line_info, 'N/F'))
+            else:
+                all_errors.append(("Error", error, 'N/F', 'N/F'))
 
         for warning in warnings:
-            all_errors.append(("Warning", warning.message, warning.line, warning.column))
+            all_errors.append(("Warning", warning, 'N/F', 'N/F'))
 
         # Sort by line number
-        all_errors.sort(key=lambda x: x[2])
+        all_errors.sort(key=lambda x: x[1 if len(x) > 2 else 0])
 
         # Display errors
         self.errors_table.setRowCount(len(all_errors))
@@ -201,7 +225,6 @@ class OutputPanel(QWidget):
             message_item = QTableWidgetItem(message)
             line_item = QTableWidgetItem(str(line))
             column_item = QTableWidgetItem(str(column))
-
             # Color code by severity
             if severity == "Error":
                 color = QColor("#F48771")  # Red

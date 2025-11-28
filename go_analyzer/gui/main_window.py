@@ -44,7 +44,7 @@ class AnalysisThread(QThread):
             lex_output = analysis_result['lexical_analysis']
             tokens_list = []
             
-            token_pattern = re.compile(r'(\w+)\((.*?)\) at line (\d+)')
+            token_pattern = re.compile(r'(\w+)\((.*?)\) at line (\d+), column (\d+)')
 
             for line in lex_output.split('\n'):
                 match = token_pattern.match(line)
@@ -52,7 +52,8 @@ class AnalysisThread(QThread):
                     tokens_list.append({
                         'type': match.group(1),
                         'value': match.group(2),
-                        'line': int(match.group(3))
+                        'line': int(match.group(3)),
+                        'column': int(match.group(4))
                     })
                 elif "Lexical errors detected:" in line:
                     pass  # Skip
@@ -66,9 +67,9 @@ class AnalysisThread(QThread):
             
             for line in parser_output.split('\n'):
                 if "✗" in line or "Error" in line:
-                    if "Syntax" in line or "Syntactic" in line:
+                    if "Sintactico" in line:
                         result['syntax_errors'].append(line.strip())
-                    elif "Semantic" in line:
+                    elif "Semantico" in line or "semántico" in line:
                         result['semantic_errors'].append(line.strip())
 
             result["raw_report"] = parser_output
@@ -491,7 +492,10 @@ type Person struct {
 
         # Display results
         self.output_panel.display_tokens(result['tokens'])
-        self.output_panel.display_ast(result['ast'])
+        if result['raw_report']:
+            self.output_panel.ast_text.setPlainText(result['raw_report'])
+            self.output_panel.log("AST report generated.")
+        
         self.output_panel.display_symbol_table(result['symbols'])
         self.output_panel.display_errors(
             result['lexical_errors'],

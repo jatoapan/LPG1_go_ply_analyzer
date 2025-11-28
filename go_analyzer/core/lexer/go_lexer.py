@@ -225,7 +225,7 @@ lexical_errors = []
 
 # Error handling rule
 def t_error(t):
-    message = f"Illegal character '{t.value[0]}' on line {t.lineno}"
+    message = f"Illegal character '{t.value[0]}' on line {t.lineno}, column {t.lexpos}"
     print(message)
     lexical_errors.append(message)
     t.lexer.skip(1)  # Skip the illegal character and continue
@@ -286,7 +286,7 @@ def run_lexer_gui(source_code: str) -> str:
             token = lexer.token()
             if not token:
                 break
-            output_lines.append(f"{token.type}({token.value}) at line {token.lineno}")
+            output_lines.append(f"{token.type}({token.value}) at line {token.lineno}, column {token.lexpos}")
 
         # Append lexical errors if any
         if lexical_errors:

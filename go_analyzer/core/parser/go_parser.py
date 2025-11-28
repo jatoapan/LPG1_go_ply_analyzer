@@ -1387,7 +1387,7 @@ def run_parser_gui(source_code: str) -> str:
         if syntax_errors:
             output_lines.append(f"✗ Syntax Errors Found: {len(syntax_errors)}")
             for i, err in enumerate(syntax_errors, 1):
-                output_lines.append(f"  {i}. {err}")
+                output_lines.append(f"✗ Error Sintactico {i}: {err}")
         else:
             output_lines.append("✓ No syntax errors")
         output_lines.append("")
