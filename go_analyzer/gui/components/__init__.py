@@ -6,5 +6,6 @@ Contains reusable UI components including the code editor and results panel.
 
 from .code_editor import CodeEditor
 from .results_panel import ResultsPanel
+from .controls import ControlPanel
 
-__all__ = ['CodeEditor', 'ResultsPanel']
+__all__ = ['CodeEditor', 'ResultsPanel', 'ControlPanel']
