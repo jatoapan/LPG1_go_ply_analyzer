@@ -237,6 +237,7 @@ def p_type(p):
 def p_slice_type(p):
     "slice_type : LBRACKET RBRACKET primitive_type"
     log_info("slice_type")
+    p[0] = ("slice", p[3])
 
 
 def p_expression_slice(p):
@@ -288,7 +289,7 @@ def p_local_statement(p):
 
 def p_break_statement(p):
     """break_statement : BREAK"""
-    if not any(ctx == "loop" for ctx in loop_context_stack):
+    if not any(ctx == "loop" or ctx == "switch" for ctx in loop_context_stack):
         semantic_errors.append(
             "Error semántico: 'break' solo puede usarse dentro de un loop"
         )
@@ -400,6 +401,10 @@ def p_parameter(p):
     """parameter : IDENTIFIER type
     | IDENTIFIER ELLIPSIS primitive_type"""
     log_info("parameter")
+    if len(p) == 3:
+        p[0] = (p[1], p[2])
+    elif len(p) == 4:
+        p[0] = (p[1], p[3])
 
 
 def p_return_type(p):
@@ -717,7 +722,6 @@ def p_type_name(p):
 # Case clause structure: CASE reserved word, expression
 # Default reserved statement
 # Array structure defined, added to expression_type
-# Variadic functions calls validated
 # Print/Input statements: fmt.Println/Printf/Scanf with variadic argument support
 
 
@@ -1005,7 +1009,7 @@ def get_semantic_summary():
 
 def p_error(p):
     if p:
-        msg = f"Syntax error at '{p.value}' (line {p.lineno})"
+        msg = f"Syntax error at '{p.value}' (line {p.lineno}, column {p.lexpos})"
     else:
         msg = "Syntax error at EOF"
     print(msg)

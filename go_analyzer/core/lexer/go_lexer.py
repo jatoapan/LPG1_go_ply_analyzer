@@ -207,7 +207,7 @@ def t_SINGLE_LINE_COMMENT(t):
 
 
 def t_MULTI_LINE_COMMENT(t):
-    r"\/\*(.|\n)*\*\/"
+    r"\/\*(.|\n)*?\*\/"
     t.lexer.lineno += t.value.count("\n")
     pass
 

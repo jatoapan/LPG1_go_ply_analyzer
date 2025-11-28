@@ -373,17 +373,17 @@ import "fmt"
 
 // This is a sample Go program
 func main() {
-    var x int = 42
-    y := 3.14
-    message := "Hello, Go Analyzer!"
+      var x int = 42
+      y := 3.14
+      message := "Hello, Go Analyzer!"
 
-    if x > 10 {
-        fmt.Println(message)
-    }
+      if x > 10 {
+          fmt.Println(message)
+      }
 
-    for i := 0; i < 10; i++ {
-        fmt.Printf("%d ", i)
-    }
+      for i := 0; i < 10; i++ {
+          fmt.Printf("%d ", i)
+      }
 }
 
 func add(a int, b int) int {
