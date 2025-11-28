@@ -116,25 +116,25 @@ def p_global_var_dec(p):
     | VAR IDENTIFIER type ASSIGN expression
     | VAR IDENTIFIER ASSIGN expression"""
     var_name = p[2]
-    for context in context_stack[::-1]:
-        if var_name in context["variables"]:
-            semantic_errors.append(
-                f"Error semántico: La variable '{var_name}' ya fue declarada en este ámbito."
-            )
+    # Check for redeclaration in global scope only
+    if var_name in context_stack[-1]["variables"]:
+        semantic_errors.append(
+            f"Error semántico: La variable '{var_name}' ya fue declarada en este ámbito."
+        )
     if len(p) == 4:  # VAR IDENTIFIER type
         tipo = p[3]
         context_stack[-1]["variables"][var_name] = tipo
     elif len(p) == 5:  # VAR IDENTIFIER ASSIGN expression
         tipo = p[4]
         context_stack[-1]["variables"][var_name] = tipo
-    elif len(p) == 6:
-        tipo = p[3]
-        if tipo != p[5]:
+    elif len(p) == 6:  # VAR IDENTIFIER type ASSIGN expression
+        tipo_declarado = p[3]
+        tipo_expresion = p[5]
+        if tipo_declarado != tipo_expresion:
             semantic_errors.append(
-                f"Error Semantico: Tipo de variable '{tipo}' no coincide con tipo de expresion asignada '{p[5]}'."
+                f"Error Semantico: Tipo declarado '{tipo_declarado}' no coincide con tipo de expresion '{tipo_expresion}'."
             )
-        else:
-            context_stack[-1]["variables"][var_name] = p[4]
+        context_stack[-1]["variables"][var_name] = tipo_declarado
     log_info("global_var_dec")
 
 
@@ -197,6 +197,7 @@ def p_local_const_dec(p):
 def p_assignment_compound(p):
     """assignment_compound : IDENTIFIER operator_assign expression"""
     var_name = p[1]
+    # Check if trying to modify a constant
     if var_name in context_stack[0]["consts"]:
         semantic_errors.append(
             f"Error semántico: La constante '{var_name}' no puede ser modificada"
@@ -499,21 +500,26 @@ def p_array_literal(p):
 
     if isinstance(p[1], str) and p[1] == "array":
         array_info = current.get("array", {})
-        size = array_info["size"]
+        declared_size = array_info.get("size", 0)
         element_type = array_info.get("element_type", None)
-        if len(p) == 5:  # array_type LBRACE RBRACE
-            expected_types = p[3]
-            for t in expected_types:
+
+        if len(p) == 5:  # array_type LBRACE expression_list RBRACE
+            # Array with elements
+            expression_types = p[3]
+            # Check type consistency
+            for t in expression_types:
                 if t != element_type:
                     semantic_errors.append(
                         f"Error Semantico: Tipo de elemento en array '{t}' no coincide con tipo esperado '{element_type}'."
                     )
-            if len(expected_types) > size:
+            # Check size consistency
+            if len(expression_types) != declared_size:
                 semantic_errors.append(
-                    f"Error Semantico: Tamaño de array declarado '{size}' no coincide con número de elementos proporcionados '{len(expected_types)}'."
+                    f"Error Semantico: Tamaño de array declarado '{declared_size}' no coincide con número de elementos proporcionados '{len(expression_types)}'."
                 )
     else:
-        array_info = current["array"] = {}
+        # Ellipsis array [...]{} with size inferred from elements
+        array_info = current.setdefault("array", {})
         element_type = p[4]
         array_info["element_type"] = element_type
         if len(p) == 7:  # LBRACKET ELLIPSIS RBRACKET primitive_type LBRACE RBRACE
