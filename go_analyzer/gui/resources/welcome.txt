@@ -1,0 +1,33 @@
+╔════════════════════════════════════════════════════╗
+║         Welcome to Go Analyzer!                    ║
+╚════════════════════════════════════════════════════╝
+
+This tool performs comprehensive analysis of Go code:
+
+  🔍 Lexical Analysis - Tokenization and lexical error detection
+  ✅ Syntax Analysis - Grammar validation and parse tree generation
+  🧠 Semantic Analysis - Type checking and semantic rules
+
+How to use:
+  1. Write or load Go code in the left panel
+  2. Click "Run Analysis" or press Ctrl+R
+  3. View results here with color-coded output
+
+Keyboard Shortcuts:
+  Ctrl+R - Run analysis
+  Ctrl+L - Clear results
+  Ctrl+O - Load file
+  Ctrl+S - Save results
+
+Example Files:
+  Check the File menu or examples directory for sample Go programs
+  to help you get started with the analyzer.
+
+Features:
+  - Real-time lexical, syntax, and semantic analysis
+  - Comprehensive error reporting with line numbers
+  - Symbol table generation
+  - Type checking and semantic rule validation
+  - Export analysis results to file
+
+Ready to analyze your Go code!

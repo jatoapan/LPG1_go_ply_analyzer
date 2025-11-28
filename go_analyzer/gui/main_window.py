@@ -11,6 +11,14 @@ from .components.code_editor import CodeEditor
 from .components.results_panel import ResultsPanel
 from .components.controls import ControlPanel
 from .handlers.analysis_handler import AnalysisHandler
+from .handlers.file_handler import FileHandler
+from .state.app_state import AppState
+from .config import (
+    WINDOW_TITLE, WINDOW_SIZE, WINDOW_MIN_WIDTH, WINDOW_MIN_HEIGHT,
+    LABEL_FONT_BOLD, STATUS_CLEARED,
+    SHORTCUT_RUN_ANALYSIS, SHORTCUT_CLEAR_RESULTS,
+    SHORTCUT_LOAD_FILE, SHORTCUT_SAVE_RESULTS
+)
 
 
 class MainWindow:
@@ -19,14 +27,17 @@ class MainWindow:
     def __init__(self):
         """Initialize the main window."""
         self.root = tk.Tk()
-        self.root.title("Go Analyzer - Lexical, Syntax & Semantic Analysis")
-        self.root.geometry("1100x600")
+        self.root.title(WINDOW_TITLE)
+        self.root.geometry(WINDOW_SIZE)
 
         # Set minimum window size
-        self.root.minsize(800, 400)
+        self.root.minsize(WINDOW_MIN_WIDTH, WINDOW_MIN_HEIGHT)
 
         # Configure window close protocol
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
+
+        # Initialize state manager
+        self.state = AppState()
 
         # Initialize components
         self._setup_ui()
@@ -47,7 +58,7 @@ class MainWindow:
         paned_window.add(left_frame, weight=1)
 
         # Editor label
-        editor_label = ttk.Label(left_frame, text="Go Code Editor", font=('Arial', 10, 'bold'))
+        editor_label = ttk.Label(left_frame, text="Go Code Editor", font=LABEL_FONT_BOLD)
         editor_label.pack(pady=(0, 5))
 
         # Code editor component
@@ -59,7 +70,7 @@ class MainWindow:
         paned_window.add(right_frame, weight=1)
 
         # Results label
-        results_label = ttk.Label(right_frame, text="Analysis Results", font=('Arial', 10, 'bold'))
+        results_label = ttk.Label(right_frame, text="Analysis Results", font=LABEL_FONT_BOLD)
         results_label.pack(pady=(0, 5))
 
         # Results panel component
@@ -82,30 +93,37 @@ class MainWindow:
         self.control_panel = ControlPanel(parent, callbacks=callbacks)
         self.control_panel.pack(fill=tk.X, pady=(5, 0))
 
-        # Initialize analysis handler
+        # Initialize handlers
         self.analysis_handler = AnalysisHandler(
             self.code_editor,
             self.results_panel,
             self.control_panel
         )
 
+        self.file_handler = FileHandler(
+            self.code_editor,
+            self.results_panel,
+            self.control_panel,
+            self.state
+        )
+
     def _setup_shortcuts(self):
-        """Set up keyboard shortcuts."""
+        """Set up keyboard shortcuts using config constants."""
         # Ctrl+R - Run analysis
-        self.root.bind('<Control-r>', lambda e: self.run_analysis())
-        self.root.bind('<Control-R>', lambda e: self.run_analysis())
+        for shortcut in SHORTCUT_RUN_ANALYSIS:
+            self.root.bind(shortcut, lambda e: self.run_analysis())
 
         # Ctrl+L - Clear results
-        self.root.bind('<Control-l>', lambda e: self.clear_results())
-        self.root.bind('<Control-L>', lambda e: self.clear_results())
+        for shortcut in SHORTCUT_CLEAR_RESULTS:
+            self.root.bind(shortcut, lambda e: self.clear_results())
 
-        # Ctrl+O - Load file (placeholder)
-        self.root.bind('<Control-o>', lambda e: self.load_file())
-        self.root.bind('<Control-O>', lambda e: self.load_file())
+        # Ctrl+O - Load file
+        for shortcut in SHORTCUT_LOAD_FILE:
+            self.root.bind(shortcut, lambda e: self.load_file())
 
-        # Ctrl+S - Save results (placeholder)
-        self.root.bind('<Control-s>', lambda e: self.save_results())
-        self.root.bind('<Control-S>', lambda e: self.save_results())
+        # Ctrl+S - Save results
+        for shortcut in SHORTCUT_SAVE_RESULTS:
+            self.root.bind(shortcut, lambda e: self.save_results())
 
     def run_analysis(self):
         """Run analysis on the current code."""
@@ -115,21 +133,21 @@ class MainWindow:
     def clear_results(self):
         """Clear the results panel."""
         self.results_panel.clear()
-        self.control_panel.set_status("Results cleared", "success")
+        self.control_panel.set_status(STATUS_CLEARED, "success")
 
     def load_file(self):
-        """Load a file into the editor (placeholder)."""
-        # Will be implemented in Phase 4
-        messagebox.showinfo("Load File", "File loading will be implemented in Phase 4.")
+        """Load a file into the editor."""
+        self.file_handler.load_file()
 
     def save_results(self):
-        """Save results to a file (placeholder)."""
-        # Will be implemented in Phase 4
-        messagebox.showinfo("Save Results", "Results saving will be implemented in Phase 4.")
+        """Save results to a file."""
+        self.file_handler.save_results()
 
     def on_closing(self):
         """Handle window close event."""
         if messagebox.askokcancel("Quit", "Do you want to quit?"):
+            # Save state before closing
+            self.state.save_state()
             self.root.destroy()
 
     def run(self):

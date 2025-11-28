@@ -64,10 +64,16 @@ class AnalysisHandler:
 
             # Update status based on result
             if result["status"] == "success":
-                # Check if there were any errors in the output
+                # Check if there were actual errors in the output (more precise detection)
+                lexical_output = result.get("lexical_analysis", "")
+                parser_output = result.get("parser_analysis", "")
+
                 has_errors = (
-                    "Error" in result.get("lexical_analysis", "") or
-                    "Error" in result.get("parser_analysis", "")
+                    "Lexical errors detected:" in lexical_output or
+                    "✗ Syntax Errors Found:" in parser_output or
+                    "✗ Semantic Errors Found:" in parser_output or
+                    "Analysis Failed" in lexical_output or
+                    "Analysis Failed" in parser_output
                 )
 
                 if has_errors:

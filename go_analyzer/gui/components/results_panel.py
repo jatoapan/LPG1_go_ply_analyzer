@@ -7,6 +7,10 @@ sections and error highlighting.
 
 import tkinter as tk
 from tkinter import scrolledtext
+from ..config import (
+    RESULTS_BG, RESULTS_FG, RESULTS_FONT, RESULTS_PADDING_X, RESULTS_PADDING_Y,
+    DEFAULT_WELCOME_MESSAGE, get_tag_config
+)
 
 
 class ResultsPanel(tk.Frame):
@@ -21,20 +25,16 @@ class ResultsPanel(tk.Frame):
         """
         super().__init__(parent)
 
-        # Configure dark theme colors
-        self.bg_color = "#1e1e1e"
-        self.fg_color = "#d4d4d4"
-
-        # Create the text widget (read-only)
+        # Create the text widget (read-only) with config settings
         self.text_widget = scrolledtext.ScrolledText(
             self,
             wrap=tk.WORD,
-            font=("Courier New", 10),
-            bg=self.bg_color,
-            fg=self.fg_color,
+            font=RESULTS_FONT,
+            bg=RESULTS_BG,
+            fg=RESULTS_FG,
             state=tk.DISABLED,
-            padx=10,
-            pady=10,
+            padx=RESULTS_PADDING_X,
+            pady=RESULTS_PADDING_Y,
             relief=tk.FLAT,
             borderwidth=0
         )
@@ -48,76 +48,13 @@ class ResultsPanel(tk.Frame):
 
     def _setup_text_tags(self):
         """Configure text tags for color-coded output."""
-        # Header tag (bright blue)
-        self.text_widget.tag_config(
-            "header",
-            foreground="#569cd6",
-            font=("Courier New", 11, "bold")
-        )
-
-        # Success tag (green)
-        self.text_widget.tag_config(
-            "success",
-            foreground="#4ec9b0"
-        )
-
-        # Error tag (red)
-        self.text_widget.tag_config(
-            "error",
-            foreground="#f48771"
-        )
-
-        # Warning tag (yellow)
-        self.text_widget.tag_config(
-            "warning",
-            foreground="#dcdcaa"
-        )
-
-        # Info tag (cyan)
-        self.text_widget.tag_config(
-            "info",
-            foreground="#4fc1ff"
-        )
-
-        # Section tag (purple)
-        self.text_widget.tag_config(
-            "section",
-            foreground="#c586c0",
-            font=("Courier New", 10, "bold")
-        )
-
-        # Emphasis tag (bold)
-        self.text_widget.tag_config(
-            "emphasis",
-            font=("Courier New", 10, "bold")
-        )
+        tag_configs = get_tag_config()
+        for tag_name, tag_config in tag_configs.items():
+            self.text_widget.tag_config(tag_name, **tag_config)
 
     def _display_welcome_message(self):
         """Display the welcome message."""
-        welcome = """╔════════════════════════════════════════════════════╗
-║         Welcome to Go Analyzer!                    ║
-╚════════════════════════════════════════════════════╝
-
-This tool performs comprehensive analysis of Go code:
-
-  Lexical Analysis - Tokenization and lexical error detection
-  Syntax Analysis - Grammar validation and parse tree generation
-  Semantic Analysis - Type checking and semantic rules
-
-How to use:
-  1. Write or load Go code in the left panel
-  2. Click "Run Analysis" or press Ctrl+R
-  3. View results here with color-coded output
-
-Keyboard Shortcuts:
-  Ctrl+R - Run analysis
-  Ctrl+L - Clear results
-  Ctrl+O - Load file
-  Ctrl+S - Save results
-
-Ready to analyze your Go code!
-"""
-        self._append_text(welcome, "info")
+        self._append_text(DEFAULT_WELCOME_MESSAGE, "info")
 
     def _append_text(self, text, tag=None):
         """

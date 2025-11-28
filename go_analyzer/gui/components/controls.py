@@ -7,6 +7,10 @@ loading files, and saving results with proper styling and event wiring.
 
 import tkinter as tk
 from tkinter import ttk
+from ..config import (
+    BUTTON_WIDTH, BUTTON_PADDING_X, BUTTON_PADDING_Y,
+    STATUS_FONT, STATUS_READY, WIDGET_PADDING_X, get_status_color
+)
 
 
 class ControlPanel(tk.Frame):
@@ -33,52 +37,52 @@ class ControlPanel(tk.Frame):
         """Set up the control panel user interface."""
         # Create button frame
         button_frame = ttk.Frame(self)
-        button_frame.pack(fill=tk.X, pady=5)
+        button_frame.pack(fill=tk.X, pady=BUTTON_PADDING_Y)
 
         # Run Analysis button (primary action)
         self.run_button = ttk.Button(
             button_frame,
             text="▶ Run Analysis",
             command=self._on_run_analysis,
-            width=15
+            width=BUTTON_WIDTH
         )
-        self.run_button.pack(side=tk.LEFT, padx=5)
+        self.run_button.pack(side=tk.LEFT, padx=BUTTON_PADDING_X)
 
         # Clear button
         self.clear_button = ttk.Button(
             button_frame,
             text="Clear Results",
             command=self._on_clear_results,
-            width=15
+            width=BUTTON_WIDTH
         )
-        self.clear_button.pack(side=tk.LEFT, padx=5)
+        self.clear_button.pack(side=tk.LEFT, padx=BUTTON_PADDING_X)
 
         # Load File button
         self.load_button = ttk.Button(
             button_frame,
             text="📁 Load File",
             command=self._on_load_file,
-            width=15
+            width=BUTTON_WIDTH
         )
-        self.load_button.pack(side=tk.LEFT, padx=5)
+        self.load_button.pack(side=tk.LEFT, padx=BUTTON_PADDING_X)
 
         # Save Results button
         self.save_button = ttk.Button(
             button_frame,
             text="💾 Save Results",
             command=self._on_save_results,
-            width=15
+            width=BUTTON_WIDTH
         )
-        self.save_button.pack(side=tk.LEFT, padx=5)
+        self.save_button.pack(side=tk.LEFT, padx=BUTTON_PADDING_X)
 
         # Status label on the right
         self.status_label = ttk.Label(
             button_frame,
-            text="Ready",
-            font=('Arial', 9),
-            foreground="#4ec9b0"
+            text=STATUS_READY,
+            font=STATUS_FONT,
+            foreground=get_status_color("normal")
         )
-        self.status_label.pack(side=tk.RIGHT, padx=10)
+        self.status_label.pack(side=tk.RIGHT, padx=WIDGET_PADDING_X)
 
     def _on_run_analysis(self):
         """Handle run analysis button click."""
@@ -112,14 +116,7 @@ class ControlPanel(tk.Frame):
             message (str): Status message to display
             status_type (str): Type of status - "normal", "running", "success", "error"
         """
-        color_map = {
-            "normal": "#4ec9b0",      # Cyan
-            "running": "#dcdcaa",     # Yellow
-            "success": "#4ec9b0",     # Green
-            "error": "#f48771"        # Red
-        }
-
-        color = color_map.get(status_type, "#d4d4d4")
+        color = get_status_color(status_type)
         self.status_label.config(text=message, foreground=color)
 
     def enable_buttons(self, enabled=True):

@@ -7,6 +7,11 @@ for editing Go source code.
 
 import tkinter as tk
 from tkinter import scrolledtext
+from ..config import (
+    EDITOR_BG, EDITOR_FG, EDITOR_INSERT, EDITOR_SELECT_BG, EDITOR_SELECT_FG,
+    EDITOR_FONT, TAB_SIZE, EDITOR_UNDO_ENABLED, EDITOR_MAX_UNDO,
+    DEFAULT_EDITOR_CONTENT, TEXT_PADDING_X, TEXT_PADDING_Y
+)
 
 
 class CodeEditor(tk.Frame):
@@ -21,27 +26,20 @@ class CodeEditor(tk.Frame):
         """
         super().__init__(parent)
 
-        # Configure dark theme colors
-        self.bg_color = "#1e1e1e"
-        self.fg_color = "#d4d4d4"
-        self.insert_color = "#aeafad"
-        self.select_bg = "#264f78"
-        self.select_fg = "#ffffff"
-
-        # Create the text widget
+        # Create the text widget with config settings
         self.text_widget = scrolledtext.ScrolledText(
             self,
             wrap=tk.NONE,
-            font=("Courier New", 11),
-            bg=self.bg_color,
-            fg=self.fg_color,
-            insertbackground=self.insert_color,
-            selectbackground=self.select_bg,
-            selectforeground=self.select_fg,
-            undo=True,
-            maxundo=-1,
-            padx=5,
-            pady=5,
+            font=EDITOR_FONT,
+            bg=EDITOR_BG,
+            fg=EDITOR_FG,
+            insertbackground=EDITOR_INSERT,
+            selectbackground=EDITOR_SELECT_BG,
+            selectforeground=EDITOR_SELECT_FG,
+            undo=EDITOR_UNDO_ENABLED,
+            maxundo=EDITOR_MAX_UNDO,
+            padx=TEXT_PADDING_X,
+            pady=TEXT_PADDING_Y,
             relief=tk.FLAT,
             borderwidth=0
         )
@@ -57,7 +55,7 @@ class CodeEditor(tk.Frame):
         """Configure tab key to insert spaces instead of tab character."""
         def handle_tab(event):
             """Handle tab key press."""
-            self.text_widget.insert(tk.INSERT, "    ")  # Insert 4 spaces
+            self.text_widget.insert(tk.INSERT, " " * TAB_SIZE)
             return "break"  # Prevent default tab behavior
 
         def handle_shift_tab(event):
@@ -68,15 +66,16 @@ class CodeEditor(tk.Frame):
             line_end = f"{line_num}.end"
             line_text = self.text_widget.get(line_start, line_end)
 
-            # Remove up to 4 leading spaces
-            if line_text.startswith("    "):
-                self.text_widget.delete(line_start, f"{line_num}.4")
-            elif line_text.startswith("   "):
-                self.text_widget.delete(line_start, f"{line_num}.3")
-            elif line_text.startswith("  "):
-                self.text_widget.delete(line_start, f"{line_num}.2")
-            elif line_text.startswith(" "):
-                self.text_widget.delete(line_start, f"{line_num}.1")
+            # Remove up to TAB_SIZE leading spaces
+            spaces_to_remove = 0
+            for i in range(min(TAB_SIZE, len(line_text))):
+                if line_text[i] == " ":
+                    spaces_to_remove += 1
+                else:
+                    break
+
+            if spaces_to_remove > 0:
+                self.text_widget.delete(line_start, f"{line_num}.{spaces_to_remove}")
 
             return "break"
 
@@ -86,24 +85,7 @@ class CodeEditor(tk.Frame):
 
     def _insert_welcome_message(self):
         """Insert a welcome message into the editor."""
-        welcome_text = """// Welcome to Go Analyzer!
-//
-// Write or paste your Go code here, then click "Run Analysis"
-// or press Ctrl+R to analyze it.
-//
-// Example Go code:
-
-package main
-
-import "fmt"
-
-func main() {
-    x := 10
-    y := 20
-    fmt.Println(x + y)
-}
-"""
-        self.text_widget.insert("1.0", welcome_text)
+        self.text_widget.insert("1.0", DEFAULT_EDITOR_CONTENT)
 
     def get_code(self):
         """
