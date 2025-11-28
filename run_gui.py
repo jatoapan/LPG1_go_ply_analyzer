@@ -1,29 +1,37 @@
-import sys 
-import os
-from PySide6.QtWidgets import QApplication
+#!/usr/bin/env python3
+"""
+Go Analyzer GUI Entry Point
 
-try:
-    from go_analyzer.gui.main_window import MainWindow
-except ImportError as e:
-    print("Error: Could not import MainWindow from go_analyzer.gui.main_window. \n"
-    "Please ensure that the go_analyzer package is correctly installed and accessible.")
-    print(f"Error Details: {e}")
-    sys.exit(1)
+Launches the graphical user interface for the Go code analyzer.
+Provides an interactive environment for lexical, syntax, and semantic analysis.
+
+Usage:
+    python run_gui.py
+"""
+
+import sys
+import os
+
+# Add the project root to the Python path
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from go_analyzer.gui import MainWindow
+
 
 def main():
-    """
-    Punto de entrada principal para la GUI del Analizador Go.
-    """
-    app = QApplication(sys.argv)
+    """Main entry point for the GUI application."""
+    try:
+        app = MainWindow()
+        app.run()
+    except KeyboardInterrupt:
+        print("\nApplication terminated by user.")
+        sys.exit(0)
+    except Exception as e:
+        print(f"Error starting application: {e}", file=sys.stderr)
+        import traceback
+        traceback.print_exc()
+        sys.exit(1)
 
-    app.setApplicationDisplayName("Go Analyzer")
-    app.setOrganizationName("LPG1 Team")
-    app.setApplicationVersion("1.0")
-
-    window = MainWindow()
-    window.show()
-    sys.exit(app.exec())
 
 if __name__ == "__main__":
-    print("Starting Go Analyzer GUI...")
     main()

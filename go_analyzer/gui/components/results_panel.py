@@ -1,302 +1,231 @@
 """
-Results Panel Component for Go Analyzer
+Results display panel for Go Analyzer GUI.
 
-A simple, read-only text display for showing formatted analysis results.
-Features color-coded sections for errors, success messages, and different
-analysis outputs.
+Provides a formatted display area for analysis results with color-coded
+sections and error highlighting.
 """
 
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QTextEdit, QPushButton, QHBoxLayout
-from PySide6.QtCore import Qt
-from PySide6.QtGui import QColor, QFont, QPalette, QTextCharFormat, QTextCursor
+import tkinter as tk
+from tkinter import scrolledtext
 
 
-class ResultsPanel(QWidget):
-    """
-    A read-only text panel for displaying formatted analysis results.
+class ResultsPanel(tk.Frame):
+    """Results display panel with formatted output and color coding."""
 
-    Features:
-    - Read-only text display with scrolling
-    - Color-coded sections (errors in red, success in green, info in blue)
-    - Welcome message on initialization
-    - Clear/reset functionality
-    - Consistent dark theme styling
-    """
+    def __init__(self, parent):
+        """
+        Initialize the results panel.
 
-    def __init__(self, parent=None):
+        Args:
+            parent: Parent widget
+        """
         super().__init__(parent)
-        self.setup_ui()
-        self.setup_text_formats()
-        self.set_dark_theme()
-        self.show_welcome_message()
 
-    def setup_ui(self):
-        """Set up the user interface."""
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(5, 5, 5, 5)
-        layout.setSpacing(5)
+        # Configure dark theme colors
+        self.bg_color = "#1e1e1e"
+        self.fg_color = "#d4d4d4"
 
-        # Text display area (read-only, scrollable)
-        self.text_display = QTextEdit()
-        self.text_display.setReadOnly(True)
+        # Create the text widget (read-only)
+        self.text_widget = scrolledtext.ScrolledText(
+            self,
+            wrap=tk.WORD,
+            font=("Courier New", 10),
+            bg=self.bg_color,
+            fg=self.fg_color,
+            state=tk.DISABLED,
+            padx=10,
+            pady=10,
+            relief=tk.FLAT,
+            borderwidth=0
+        )
+        self.text_widget.pack(fill=tk.BOTH, expand=True)
 
-        # Set monospace font for better code/data display
-        font = QFont("Consolas", 9)
-        font.setStyleHint(QFont.Monospace)
-        self.text_display.setFont(font)
+        # Configure text tags for formatting
+        self._setup_text_tags()
 
-        # Enable line wrap for better readability
-        self.text_display.setLineWrapMode(QTextEdit.WidgetWidth)
+        # Display welcome message
+        self._display_welcome_message()
 
-        layout.addWidget(self.text_display)
+    def _setup_text_tags(self):
+        """Configure text tags for color-coded output."""
+        # Header tag (bright blue)
+        self.text_widget.tag_config(
+            "header",
+            foreground="#569cd6",
+            font=("Courier New", 11, "bold")
+        )
 
-        # Button bar at bottom
-        button_layout = QHBoxLayout()
-        button_layout.setSpacing(5)
+        # Success tag (green)
+        self.text_widget.tag_config(
+            "success",
+            foreground="#4ec9b0"
+        )
 
-        # Clear button
-        self.clear_button = QPushButton("Clear Results")
-        self.clear_button.clicked.connect(self.clear)
-        self.clear_button.setFixedHeight(30)
+        # Error tag (red)
+        self.text_widget.tag_config(
+            "error",
+            foreground="#f48771"
+        )
 
-        # Copy button
-        self.copy_button = QPushButton("Copy All")
-        self.copy_button.clicked.connect(self.copy_all_text)
-        self.copy_button.setFixedHeight(30)
+        # Warning tag (yellow)
+        self.text_widget.tag_config(
+            "warning",
+            foreground="#dcdcaa"
+        )
 
-        button_layout.addStretch()
-        button_layout.addWidget(self.copy_button)
-        button_layout.addWidget(self.clear_button)
+        # Info tag (cyan)
+        self.text_widget.tag_config(
+            "info",
+            foreground="#4fc1ff"
+        )
 
-        layout.addLayout(button_layout)
+        # Section tag (purple)
+        self.text_widget.tag_config(
+            "section",
+            foreground="#c586c0",
+            font=("Courier New", 10, "bold")
+        )
 
-    def setup_text_formats(self):
-        """Set up text formatting styles for different message types."""
-        # Error format (red)
-        self.error_format = QTextCharFormat()
-        self.error_format.setForeground(QColor("#F48771"))  # Light red
-        self.error_format.setFontWeight(QFont.Bold)
+        # Emphasis tag (bold)
+        self.text_widget.tag_config(
+            "emphasis",
+            font=("Courier New", 10, "bold")
+        )
 
-        # Success format (green)
-        self.success_format = QTextCharFormat()
-        self.success_format.setForeground(QColor("#4EC9B0"))  # Cyan/green
-        self.success_format.setFontWeight(QFont.Bold)
+    def _display_welcome_message(self):
+        """Display the welcome message."""
+        welcome = """╔════════════════════════════════════════════════════╗
+║         Welcome to Go Analyzer!                    ║
+╚════════════════════════════════════════════════════╝
 
-        # Warning format (yellow/orange)
-        self.warning_format = QTextCharFormat()
-        self.warning_format.setForeground(QColor("#CCA700"))  # Yellow
+This tool performs comprehensive analysis of Go code:
 
-        # Info format (blue)
-        self.info_format = QTextCharFormat()
-        self.info_format.setForeground(QColor("#75BEFF"))  # Light blue
+  Lexical Analysis - Tokenization and lexical error detection
+  Syntax Analysis - Grammar validation and parse tree generation
+  Semantic Analysis - Type checking and semantic rules
 
-        # Header format (white, bold)
-        self.header_format = QTextCharFormat()
-        self.header_format.setForeground(QColor("#FFFFFF"))
-        self.header_format.setFontWeight(QFont.Bold)
+How to use:
+  1. Write or load Go code in the left panel
+  2. Click "Run Analysis" or press Ctrl+R
+  3. View results here with color-coded output
 
-        # Normal format (default text color)
-        self.normal_format = QTextCharFormat()
-        self.normal_format.setForeground(QColor("#D4D4D4"))  # Light gray
+Keyboard Shortcuts:
+  Ctrl+R - Run analysis
+  Ctrl+L - Clear results
+  Ctrl+O - Load file
+  Ctrl+S - Save results
 
-        # Separator format (dim)
-        self.separator_format = QTextCharFormat()
-        self.separator_format.setForeground(QColor("#6A6A6A"))  # Dim gray
+Ready to analyze your Go code!
+"""
+        self._append_text(welcome, "info")
 
-    def set_dark_theme(self):
-        """Apply dark theme consistent with the editor."""
-        palette = self.palette()
-        palette.setColor(QPalette.Base, QColor("#1E1E1E"))  # Background
-        palette.setColor(QPalette.Text, QColor("#D4D4D4"))  # Text
-        self.text_display.setPalette(palette)
-
-        # Style buttons to match theme
-        button_style = """
-        QPushButton {
-            background-color: #0E639C;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 2px;
-        }
-        QPushButton:hover {
-            background-color: #1177BB;
-        }
-        QPushButton:pressed {
-            background-color: #094771;
-        }
+    def _append_text(self, text, tag=None):
         """
-        self.clear_button.setStyleSheet(button_style)
-        self.copy_button.setStyleSheet(button_style)
-
-    def show_welcome_message(self):
-        """Display welcome message on initialization."""
-        self.clear()
-        self.append_header("=" * 70)
-        self.append_header("         Welcome to Go Analyzer - Results Display")
-        self.append_header("=" * 70)
-        self.append_text("\n")
-        self.append_info("This panel displays formatted analysis results including:")
-        self.append_text("  • Lexical analysis (tokenization)")
-        self.append_text("  • Syntax analysis (parsing)")
-        self.append_text("  • Semantic analysis (type checking, symbol resolution)")
-        self.append_text("\n")
-        self.append_info("Click 'Analyze' (F5) to analyze your Go code.")
-        self.append_text("\n")
-        self.append_separator("-" * 70)
-
-    def append_text(self, text, format=None):
-        """
-        Append text with optional formatting.
+        Append text to the results panel.
 
         Args:
-            text: Text to append
-            format: QTextCharFormat to apply (None for default)
+            text (str): Text to append
+            tag (str, optional): Text tag for formatting
         """
-        cursor = self.text_display.textCursor()
-        cursor.movePosition(QTextCursor.End)
-
-        if format:
-            cursor.insertText(text + "\n", format)
+        self.text_widget.config(state=tk.NORMAL)
+        if tag:
+            self.text_widget.insert(tk.END, text, tag)
         else:
-            cursor.insertText(text + "\n", self.normal_format)
+            self.text_widget.insert(tk.END, text)
+        self.text_widget.config(state=tk.DISABLED)
+        self._auto_scroll()
 
-        # Auto-scroll to bottom
-        self.text_display.setTextCursor(cursor)
-        self.text_display.ensureCursorVisible()
-
-    def append_header(self, text):
-        """Append text as a header (white, bold)."""
-        self.append_text(text, self.header_format)
-
-    def append_error(self, text):
-        """Append text as an error (red, bold)."""
-        self.append_text("✗ " + text, self.error_format)
-
-    def append_success(self, text):
-        """Append text as a success message (green, bold)."""
-        self.append_text("✓ " + text, self.success_format)
-
-    def append_warning(self, text):
-        """Append text as a warning (yellow)."""
-        self.append_text("⚠ " + text, self.warning_format)
-
-    def append_info(self, text):
-        """Append text as info (blue)."""
-        self.append_text("ℹ " + text, self.info_format)
-
-    def append_separator(self, text=None):
-        """Append a separator line (dim gray)."""
-        if text is None:
-            text = "-" * 70
-        self.append_text(text, self.separator_format)
-
-    def display_results(self, results_text):
-        """
-        Display formatted results text with automatic color coding.
-
-        This method parses the results text and applies appropriate
-        formatting based on content markers (✗, ✓, etc.).
-
-        Args:
-            results_text: Formatted analysis results as string
-        """
-        self.clear()
-
-        # Split into lines and process each
-        for line in results_text.split("\n"):
-            # Detect line type and apply appropriate formatting
-            if line.startswith("="):
-                self.append_header(line)
-            elif "✗" in line or "Error" in line:
-                self.append_error(line.replace("✗ ", ""))
-            elif "✓" in line or "No " in line and "error" in line.lower():
-                self.append_success(line.replace("✓ ", ""))
-            elif "⚠" in line or "Warning" in line:
-                self.append_warning(line.replace("⚠ ", ""))
-            elif line.startswith("-") and all(c == "-" for c in line.strip()):
-                self.append_separator(line)
-            elif any(
-                keyword in line
-                for keyword in ["ANALYSIS", "SOURCE CODE", "SYMBOL TABLE"]
-            ):
-                self.append_header(line)
-            else:
-                self.append_text(line)
-
-    def set_text(self, text):
-        """
-        Set the entire text content (simple version without formatting).
-
-        Args:
-            text: Plain text to display
-        """
-        self.text_display.setPlainText(text)
+    def _auto_scroll(self):
+        """Scroll to the bottom of the text widget."""
+        self.text_widget.see(tk.END)
 
     def clear(self):
-        """Clear all text from the display."""
-        self.text_display.clear()
+        """Clear all text from the results panel."""
+        self.text_widget.config(state=tk.NORMAL)
+        self.text_widget.delete("1.0", tk.END)
+        self.text_widget.config(state=tk.DISABLED)
+        self._display_welcome_message()
 
-    def reset(self):
-        """Reset to welcome message."""
-        self.show_welcome_message()
+    def display_message(self, message, tag="info"):
+        """
+        Display a message in the results panel.
 
-    def copy_all_text(self):
-        """Copy all text to clipboard."""
-        self.text_display.selectAll()
-        self.text_display.copy()
-        cursor = self.text_display.textCursor()
-        cursor.clearSelection()
-        self.text_display.setTextCursor(cursor)
+        Args:
+            message (str): Message to display
+            tag (str): Text tag for formatting (default: "info")
+        """
+        self.clear()
+        self._append_text(message, tag)
+
+    def display_results(self, results_dict):
+        """
+        Display formatted analysis results.
+
+        Args:
+            results_dict (dict): Dictionary containing analysis results
+                Expected keys: lexer_output, parser_output, errors, success
+        """
+        self.clear()
+
+        # Header
+        self._append_text("=" * 60 + "\n", "header")
+        self._append_text("  GO CODE ANALYSIS RESULTS\n", "header")
+        self._append_text("=" * 60 + "\n\n", "header")
+
+        # Lexer output
+        if "lexer_output" in results_dict:
+            self._append_text("LEXICAL ANALYSIS\n", "section")
+            self._append_text("-" * 60 + "\n", "section")
+            self._append_text(results_dict["lexer_output"] + "\n\n")
+
+        # Parser output
+        if "parser_output" in results_dict:
+            self._append_text("SYNTAX & SEMANTIC ANALYSIS\n", "section")
+            self._append_text("-" * 60 + "\n", "section")
+            self._append_text(results_dict["parser_output"] + "\n\n")
+
+        # Errors summary
+        if "errors" in results_dict and results_dict["errors"]:
+            self._append_text("ERRORS DETECTED\n", "error")
+            self._append_text("-" * 60 + "\n", "error")
+            for error in results_dict["errors"]:
+                self._append_text(f"  {error}\n", "error")
+            self._append_text("\n")
+
+        # Success indicator
+        if "success" in results_dict:
+            if results_dict["success"]:
+                self._append_text("\nAnalysis completed successfully!\n", "success")
+            else:
+                self._append_text("\nAnalysis completed with errors.\n", "error")
+
+        self._append_text("\n" + "=" * 60 + "\n", "header")
+
+    def display_error(self, error_message):
+        """
+        Display an error message.
+
+        Args:
+            error_message (str): Error message to display
+        """
+        self.clear()
+        self._append_text("ERROR\n", "error")
+        self._append_text("-" * 60 + "\n", "error")
+        self._append_text(error_message + "\n", "error")
 
     def get_text(self):
         """
-        Get all text content.
+        Get all text from the results panel.
 
         Returns:
-            str: All text in the display
+            str: The results text content
         """
-        return self.text_display.toPlainText()
+        return self.text_widget.get("1.0", tk.END)
 
-    def append_analysis_output(self, output_type, content):
-        """
-        Append a section of analysis output with header.
+    def pack(self, **kwargs):
+        """Override pack to apply to the frame."""
+        super().pack(**kwargs)
 
-        Args:
-            output_type: Type of output (e.g., "Lexical Analysis", "Parser Analysis")
-            content: The content to display
-        """
-        self.append_text("\n")
-        self.append_header(f"{'=' * 70}")
-        self.append_header(f"{output_type.upper()}")
-        self.append_header(f"{'=' * 70}")
-        self.append_text("\n")
-        self.display_results(content)
-
-    def show_error_message(self, error_msg):
-        """
-        Show an error message.
-
-        Args:
-            error_msg: Error message to display
-        """
-        self.clear()
-        self.append_header("=" * 70)
-        self.append_header("ERROR")
-        self.append_header("=" * 70)
-        self.append_text("\n")
-        self.append_error(error_msg)
-
-    def show_success_message(self, success_msg):
-        """
-        Show a success message.
-
-        Args:
-            success_msg: Success message to display
-        """
-        self.clear()
-        self.append_header("=" * 70)
-        self.append_header("SUCCESS")
-        self.append_header("=" * 70)
-        self.append_text("\n")
-        self.append_success(success_msg)
+    def grid(self, **kwargs):
+        """Override grid to apply to the frame."""
+        super().grid(**kwargs)
